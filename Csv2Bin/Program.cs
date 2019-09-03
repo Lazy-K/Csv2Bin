@@ -25,7 +25,7 @@ namespace Csv2Bin
 			}
 
 			var binary = new List<byte>();
-            UInt32 numRecords = 0;
+			UInt32 numRecords = 0;
 			{ // Read table file and convert binary by manifest
 				var tableReader = new TableReader.Reader();
 				if (!tableReader.Read(_commandLineOption.tableFilePath, manifestAtts, ref binary, ref numRecords))

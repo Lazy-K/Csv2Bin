@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,12 +12,29 @@ namespace BinReadTest
     class Program
     {
 
+
 #if true
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		private struct Cont
+		{
+			public override string ToString()
+			{
+				var s = string.Empty;
+				s += string.Format("{0}, ", flags[section1]);
+				s += string.Format("{0}, ", flags[section2]);
+				return s;
+			}
+
+			public static BitVector32.Section section1 = BitVector32.CreateSection(1);
+			public static BitVector32.Section section2 = BitVector32.CreateSection(2, section1);
+			public BitVector32 flags;
+		}
+#elif false
 		// UnicodeとAnsi文字列の混合構造体はbyte配列で受け取って変換するしかない
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		private struct Cont
 		{
-			public string ToString()
+			public override string ToString()
 			{
 				var s = string.Empty;
 #if false
@@ -53,13 +71,13 @@ namespace BinReadTest
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8/*chars*/)] public byte[] sjis;
 		}
 
-#else
+#elif false
 		// UnicodeとAnsi文字列を混合して持っていない構造体はStructLayoutで指示すればstringで受け取れる
 		[StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
 		//[StructLayout(LayoutKind.Sequential, Pack =1, CharSet = CharSet.Ansi)]
 		private struct Cont
 		{
-			public string ToString()
+			public override string ToString()
 			{
 				var s = string.Empty;
 #if false
@@ -92,7 +110,7 @@ namespace BinReadTest
 
 #endif
 
-        static private Cont[] _cont;
+		static private Cont[] _cont;
 
         static int Test1()
         {

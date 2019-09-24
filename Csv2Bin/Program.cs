@@ -37,17 +37,17 @@ namespace Csv2Bin
 			{ // Write binary file
 				try
 				{
-                    using (var writer = new BinaryWriter(new FileStream(_commandLineOption.outputBinaryFilePath, FileMode.Create)))
-                    {
-                        writer.Write(binary.ToArray());
-                        if (_commandLineOption.isAppendSummary)
-                        { // Append summary
-                            UInt32 size = (UInt32)binary.Count / numRecords;
-                            writer.Write(size);
-                            writer.Write(numRecords);
-                        }
-                    }
-                }
+					using (var writer = new BinaryWriter(new FileStream(_commandLineOption.outputBinaryFilePath, FileMode.Create)))
+					{
+						writer.Write(binary.ToArray());
+						if (_commandLineOption.isAppendSummary)
+						{ // Append summary
+							UInt32 size = (UInt32)binary.Count / numRecords;
+							writer.Write(size);
+							writer.Write(numRecords);
+						}
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e);

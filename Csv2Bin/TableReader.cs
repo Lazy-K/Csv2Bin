@@ -39,6 +39,15 @@ namespace TableReader
 								field = reader.GetField(index);
 							}
 
+							if (ManifestReader.Reader.Type.u8 != attr.type || 0 >= attr.argument)
+							{
+								if (bitflagsProcessing)
+								{
+									bitflagsProcessing = false;
+									binary.Add(bitflags);
+								}
+							}
+
 							switch (attr.type)
 							{
 								case ManifestReader.Reader.Type.u8:
@@ -71,7 +80,6 @@ namespace TableReader
 										}
 										else
 										{
-											if (bitflagsProcessing) goto Failed;
 											binary.Add(value);
 										}
 									}
@@ -154,10 +162,16 @@ namespace TableReader
 									break;
 							}
 						}
-                        dest.AddRange(binary);
-                        ++numRecords;
-                    }
-                }
+
+						if (bitflagsProcessing)
+						{
+							bitflagsProcessing = false;
+							binary.Add(bitflags);
+						}
+						dest.AddRange(binary);
+						++numRecords;
+					}
+				}
 			}
 			catch(Exception e)
 			{
@@ -166,10 +180,10 @@ namespace TableReader
 			}
 
 			return true;
-            Failed:
-            dest.Clear();
-            numRecords = 0;
-            return false;
+			Failed:
+			dest.Clear();
+			numRecords = 0;
+			return false;
 		}
 	}
 }

@@ -40,6 +40,36 @@
     <length>2</length>
     <structBitsName>bits2</structBitsName>
   </content>
-
+  <content>
+    <valueType>bits32</valueType>
+    <length>3</length>
+  </content>
+  <content>
+    <valueName>field4</valueName>
+    <valueType>bits32</valueType>
+    <length>5</length>
+    <structBitsName>bits3</structBitsName>
+  </content>
+  <content>
+    <valueType>bits32</valueType>
+    <length>21</length>
+  </content>
+  
+  <content>
+    <valueName>field5</valueName>
+    <valueType>bits32</valueType>
+    <length>24</length>
+    <structFieldName>flags2</structFieldName>
+  </content>
+  <content>
+    <valueName>field5</valueName>
+    <valueType>bits32</valueType>
+    <length>1</length>
+    <structBitsName>bits1</structBitsName>
+  </content>  
+  
+  <content>
+    <valueType>s8</valueType>
+  </content>
   
 </root>

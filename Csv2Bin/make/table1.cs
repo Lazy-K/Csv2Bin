@@ -19,6 +19,10 @@ public readonly struct Cont
 		s += string.Format("flags1[flags1_bits1]={0}", flags1[flags1_bits1]);
 		s += ", ";
 		s += string.Format("flags1[flags1_bits2]={0}", flags1[flags1_bits2]);
+		s += ", ";
+		s += string.Format("flags1[flags1_bits3]={0}", flags1[flags1_bits3]);
+		s += ", ";
+		s += string.Format("flags2[flags2_bits1]={0}", flags2[flags2_bits1]);
 		return s;
 	}
 
@@ -29,5 +33,11 @@ public readonly struct Cont
 	public readonly string code6;
 	public static readonly BitVector32.Section flags1_bits1 = BitVector32.CreateSection(1);
 	public static readonly BitVector32.Section flags1_bits2 = BitVector32.CreateSection(2, flags1_bits1);
+	public static readonly BitVector32.Section flags1_reserved_00 = BitVector32.CreateSection(3, flags1_bits2);
+	public static readonly BitVector32.Section flags1_bits3 = BitVector32.CreateSection(5, flags1_reserved_00);
 	public readonly BitVector32 flags1;
+	public static readonly BitVector32.Section flags2_reserved_00 = BitVector32.CreateSection(24);
+	public static readonly BitVector32.Section flags2_bits1 = BitVector32.CreateSection(1, flags2_reserved_00);
+	public readonly BitVector32 flags2;
+	private readonly sbyte _reserved_00;
 }

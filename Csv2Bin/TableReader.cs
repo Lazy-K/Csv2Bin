@@ -33,7 +33,7 @@ namespace TableReader
 						foreach (ManifestXmlReader.Content content in manifestContents)
 						{
 							var field = String.Empty;
-							if (content.valueName != string.Empty)
+							if (content.valueName != null)
 							{
 								var index = reader.GetFieldIndex(content.valueName);
 								field = reader.GetField(index);
@@ -55,7 +55,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.s8:
 									{
 										sbyte value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!sbyte.TryParse(field, out value)) goto Failed;
 										}
@@ -65,7 +65,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.u8:
 									{
 										byte value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!byte.TryParse(field, out value)) goto Failed;
 										}
@@ -75,7 +75,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.s16:
 									{
 										Int16 value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!Int16.TryParse(field, out value)) goto Failed;
 										}
@@ -85,7 +85,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.u16:
 									{
 										UInt16 value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!UInt16.TryParse(field, out value)) goto Failed;
 										}
@@ -95,7 +95,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.s32:
 									{
 										Int32 value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!Int32.TryParse(field, out value)) goto Failed;
 										}
@@ -105,7 +105,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.u32:
 									{
 										UInt32 value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!UInt32.TryParse(field, out value)) goto Failed;
 										}
@@ -115,7 +115,7 @@ namespace TableReader
 								case ManifestXmlReader.ValueType.f32:
 									{
 										float value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!float.TryParse(field, out value)) goto Failed;
 										}
@@ -169,7 +169,7 @@ namespace TableReader
 									{
 										const int size = 32;
 										Int32 value = 0;
-										if (content.valueName != string.Empty)
+										if (content.valueName != null)
 										{
 											if (!Int32.TryParse(field, out value)) goto Failed;
 										}

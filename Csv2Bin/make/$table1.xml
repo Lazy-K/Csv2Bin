@@ -1,0 +1,45 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+  <header>
+    <version>1.0</version>
+    <structName>Cont</structName>
+  </header>
+  <content>
+    <valueName>field1</valueName>
+    <valueType>u32</valueType>
+    <structFieldName>code1</structFieldName>
+  </content>
+  <content>
+    <valueName>field2</valueName>
+    <valueType>s32</valueType>
+    <structFieldName>code2</structFieldName>
+  </content>
+  <content>
+    <valueName>field3</valueName>
+    <valueType>f32</valueType>
+    <structFieldName>code3</structFieldName>
+  </content>
+  <content>
+    <valueName>field6</valueName>
+    <valueType>utf16</valueType>
+    <length>3</length>
+    <structFieldName>code6</structFieldName>
+  </content>
+
+
+  <content>
+    <valueName>field4</valueName>
+    <valueType>bits32</valueType>
+    <length>1</length>
+    <structFieldName>flags1</structFieldName>
+    <structBitsName>bits1</structBitsName>
+  </content>
+  <content>
+    <valueName>field5</valueName>
+    <valueType>bits32</valueType>
+    <length>2</length>
+    <structBitsName>bits2</structBitsName>
+  </content>
+
+  
+</root>

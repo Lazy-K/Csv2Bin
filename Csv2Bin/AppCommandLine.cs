@@ -10,11 +10,13 @@ namespace AppCommandLine
 		public string manifestFilePath { get; set; }
 		[Option("out", Required = true, HelpText = "Set output binary file path.")]
 		public string outputBinaryFilePath { get; set; }
-        [Option("appendSummary", Required = false, HelpText = "Set append summary enabled.")]
-        public bool isAppendSummary { get; set; }
-    }
+		[Option("appendSummary", Required = false, HelpText = "Set append summary enabled.")]
+		public bool isAppendSummary { get; set; }
+		[Option("outcs", Required = false, HelpText = "Set output cs file path.")]
+		public string outputCsFilePath { get; set; }
+	}
 
-    public class Parser
+	public class Parser
 	{
 		public static bool Parse(string[] args, ref Option option)
 		{

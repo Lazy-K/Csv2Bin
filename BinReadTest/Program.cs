@@ -9,66 +9,50 @@ using System.Threading.Tasks;
 
 namespace BinReadTest
 {
-    class Program
-    {
-
-
-#if true
-		[StructLayout(LayoutKind.Sequential, Pack = 1)]
-		private struct Cont
+	class Program
+	{
+		[StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
+		public readonly struct Cont
 		{
 			public override string ToString()
 			{
 				var s = string.Empty;
-				s += string.Format("{0}, ", flags[section1]);
-				s += string.Format("{0}, ", flags[section2]);
+				s += string.Format("code1={0}", code1);
+				s += ", ";
+				s += string.Format("code2={0}", code2);
+				s += ", ";
+				s += string.Format("code3={0}", code3);
+				s += ", ";
+				s += string.Format("code6={0}", code6);
+				s += ", ";
+				s += string.Format("flags1[flags1_bits1]={0}", flags1[flags1_bits1]);
+				s += ", ";
+				s += string.Format("flags1[flags1_bits2]={0}", flags1[flags1_bits2]);
 				return s;
 			}
 
-			public static BitVector32.Section section1 = BitVector32.CreateSection(1);
-			public static BitVector32.Section section2 = BitVector32.CreateSection(2, section1);
-			public BitVector32 flags;
+			public readonly UInt32 code1;
+			public readonly Int32 code2;
+			public readonly float code3;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 3)]
+			public readonly string code6;
+			public static readonly BitVector32.Section flags1_bits1 = BitVector32.CreateSection(1);
+			public static readonly BitVector32.Section flags1_bits2 = BitVector32.CreateSection(2, flags1_bits1);
+			public readonly BitVector32 flags1;
 		}
-#elif false
+
+#if false
 		// UnicodeとAnsi文字列の混合構造体はbyte配列で受け取って変換するしかない
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		private struct Cont
 		{
-			public override string ToString()
-			{
-				var s = string.Empty;
-#if false
-				s += string.Format("{0}, ", u32);
-				s += string.Format("{0}, ", u16);
-				s += string.Format("{0}, ", u8);
-				s += string.Format("{0}, ", s32);
-				s += string.Format("{0}, ", f32);
-				s += string.Format("{0}, ", u16_2);
-				s += string.Format("h{0:X2}, ", u8_2);
-				s += string.Format("h{0:X2}, ", u8_3);
-#endif
-
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4/*chars*/*2/*bytes*/)] public byte[] utf16;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8/*chars*/)] public byte[] sjis;
+		/*
 				s += string.Format("{0}, ", Encoding.Unicode.GetString(utf16, 0, utf16.Length));
 				s += string.Format("{0}, ", Encoding.GetEncoding("Shift_JIS").GetString(sjis, 0, sjis.Length)); // 2bytes文字を含む場合
 				s += string.Format("{0}, ", Encoding.ASCII.GetString(sjis, 0, sjis.Length)); // 2bytes文字を含まない場合ASCIIでOK
-				return s;
-			}
-#if false
-			public UInt32 u32;
-			public UInt16 u16;
-			public Byte u8;
-			public Int32 s32;
-			public float f32;
-			public UInt16 u16_2;
-			public Byte u8_2;
-			public Byte u8_3;
-#endif
-			//[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-			//public byte[] b;
-			//[MarshalAs(UnmanagedType.LPWStr, SizeConst = 2*4)] public char[] utf16;
-
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4/*chars*/*2/*bytes*/)] public byte[] utf16;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8/*chars*/)] public byte[] sjis;
+		*/
 		}
 
 #elif false
@@ -77,37 +61,9 @@ namespace BinReadTest
 		//[StructLayout(LayoutKind.Sequential, Pack =1, CharSet = CharSet.Ansi)]
 		private struct Cont
 		{
-			public override string ToString()
-			{
-				var s = string.Empty;
-#if false
-				s += string.Format("{0}, ", u32);
-				s += string.Format("{0}, ", u16);
-				s += string.Format("{0}, ", u8);
-				s += string.Format("{0}, ", s32);
-				s += string.Format("{0}, ", f32);
-				s += string.Format("{0}, ", u16_2);
-				s += string.Format("h{0:X2}, ", u8_2);
-				s += string.Format("h{0:X2}, ", u8_3);
-#endif
-				s += string.Format("{0}, ", utf16);
-				//s += string.Format("{0}, ", sjis);
-				return s;
-			}
-#if false
-			public UInt32 u32;
-			public UInt16 u16;
-			public Byte u8;
-			public Int32 s32;
-			public float f32;
-			public UInt16 u16_2;
-			public Byte u8_2;
-			public Byte u8_3;
-#endif
 			[MarshalAs(UnmanagedType.ByValTStr, SizeConst =4)] public string utf16; // CharSet = CharSet.Unicode
 			//[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 2)] public string sjis; // CharSet = CharSet.Ansi
 		}
-
 #endif
 
 		static private Cont[] _cont;

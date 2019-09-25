@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace TableReader
+namespace Csv2Bin
 {
-	public class Reader
+	public partial class Manifest
 	{
-		public static bool Read(
+		public static bool GenerateBinary(
 			string filePath,
-			List<ManifestXmlReader.Content> manifestContents,
+			in List<ManifestContent> manifestContents,
 			ref List<byte> dest,
 			ref UInt32 numRecords)
 		{
@@ -43,7 +43,7 @@ namespace TableReader
 						var bitflagsProcessing = false;
 						Int32 bitflags = 0;
 						var bitflagsShift = 0;
-						foreach (ManifestXmlReader.Content content in manifestContents)
+						foreach (ManifestContent content in manifestContents)
 						{
 							var field = String.Empty;
 							if (content.valueName != null)
@@ -52,7 +52,7 @@ namespace TableReader
 								field = reader.GetField(index);
 							}
 
-							if (ManifestXmlReader.ValueType.bits32 != content.valueType)
+							if (ValueType.bits32 != content.valueType)
 							{
 								if (bitflagsProcessing)
 								{
@@ -65,7 +65,7 @@ namespace TableReader
 							{
 								//---------------------------------------
 								// Primal Type
-								case ManifestXmlReader.ValueType.s8:
+								case ValueType.s8:
 									{
 										sbyte value = 0;
 										if (content.valueName != null)
@@ -83,7 +83,7 @@ namespace TableReader
 										binary.Add((byte)value);
 									}
 									break;
-								case ManifestXmlReader.ValueType.u8:
+								case ValueType.u8:
 									{
 										byte value = 0;
 										if (content.valueName != null)
@@ -101,7 +101,7 @@ namespace TableReader
 										binary.Add(value);
 									}
 									break;
-								case ManifestXmlReader.ValueType.s16:
+								case ValueType.s16:
 									{
 										Int16 value = 0;
 										if (content.valueName != null)
@@ -119,7 +119,7 @@ namespace TableReader
 										binary.AddRange(BitConverter.GetBytes(value));
 									}
 									break;
-								case ManifestXmlReader.ValueType.u16:
+								case ValueType.u16:
 									{
 										UInt16 value = 0;
 										if (content.valueName != null)
@@ -137,7 +137,7 @@ namespace TableReader
 										binary.AddRange(BitConverter.GetBytes(value));
 									}
 									break;
-								case ManifestXmlReader.ValueType.s32:
+								case ValueType.s32:
 									{
 										Int32 value = 0;
 										if (content.valueName != null)
@@ -155,7 +155,7 @@ namespace TableReader
 										binary.AddRange(BitConverter.GetBytes(value));
 									}
 									break;
-								case ManifestXmlReader.ValueType.u32:
+								case ValueType.u32:
 									{
 										UInt32 value = 0;
 										if (content.valueName != null)
@@ -173,7 +173,7 @@ namespace TableReader
 										binary.AddRange(BitConverter.GetBytes(value));
 									}
 									break;
-								case ManifestXmlReader.ValueType.f32:
+								case ValueType.f32:
 									{
 										float value = 0;
 										if (content.valueName != null)
@@ -194,7 +194,7 @@ namespace TableReader
 
 								//---------------------------------------
 								// String Type
-								case ManifestXmlReader.ValueType.utf16:
+								case ValueType.utf16:
 									{
 										if (0 >= content.length)
 										{
@@ -243,7 +243,7 @@ namespace TableReader
 #endif
 								//---------------------------------------
 								// Bits Type
-								case ManifestXmlReader.ValueType.bits32:
+								case ValueType.bits32:
 									{
 										const int BitsSize = 32;
 										Int32 value = 0;

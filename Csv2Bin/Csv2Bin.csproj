@@ -77,10 +77,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppCommandLine.cs" />
-    <Compile Include="ManifestXmlReader.cs" />
+    <Compile Include="Manifest.cs" />
+    <Compile Include="Manifest_GenerateCode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TableReader.cs" />
+    <Compile Include="Manifest_GenerateBinary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

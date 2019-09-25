@@ -26,10 +26,10 @@ namespace Csv2Bin
 				Console.SetOut(_logFile);
 			}
 
-			var manifestHeader = new ManifestXmlReader.Header();
-			var manifestContents = new List<ManifestXmlReader.Content>();
+			var manifestHeader = new ManifestHeader();
+			var manifestContents = new List<ManifestContent>();
 			{ // Read manifest file
-				if (!ManifestXmlReader.Reader.Read(
+				if (!Manifest.Parse(
 					_commandLineOption.manifestFilePath,
 					ref manifestHeader,
 					ref manifestContents))
@@ -43,7 +43,7 @@ namespace Csv2Bin
 				var binary = new List<byte>();
 				UInt32 numRecords = 0;
 				{ // Read table file and convert binary by manifest
-					if (!TableReader.Reader.Read(
+					if (!Manifest.GenerateBinary(
 						_commandLineOption.tableFilePath,
 						manifestContents,
 						ref binary,
@@ -80,7 +80,7 @@ namespace Csv2Bin
 				// Generate code file
 				try
 				{
-					var code = ManifestXmlReader.Util.GenerateCode(
+					var code = Manifest.GenerateCode(
 						ref manifestHeader,
 						ref manifestContents);
 					File.WriteAllText(_commandLineOption.outputCsFilePath, code);

@@ -23,6 +23,7 @@ namespace Csv2Bin
 					File.Delete(_commandLineOption.outputLogFilePath);
 				}
 				_logFile = File.CreateText(_commandLineOption.outputLogFilePath);
+				Console.SetOut(_logFile);
 			}
 
 			var manifestHeader = new ManifestXmlReader.Header();
@@ -31,8 +32,7 @@ namespace Csv2Bin
 				if (!ManifestXmlReader.Reader.Read(
 					_commandLineOption.manifestFilePath,
 					ref manifestHeader,
-					ref manifestContents,
-					_logFile))
+					ref manifestContents))
 				{
 					goto Failed;
 				}
@@ -47,8 +47,7 @@ namespace Csv2Bin
 						_commandLineOption.tableFilePath,
 						manifestContents,
 						ref binary,
-						ref numRecords,
-						_logFile))
+						ref numRecords))
 					{
 						goto Failed;
 					}
@@ -70,7 +69,7 @@ namespace Csv2Bin
 					}
 					catch (Exception e)
 					{
-						if (null != _logFile) _logFile.Write("Output Binary File Error: \"{0}\"\n", e.ToString());
+						Console.WriteLine("Output Binary File Error: \"{0}\"", e.ToString());
 						goto Failed;
 					}
 				}
@@ -88,7 +87,7 @@ namespace Csv2Bin
 				}
 				catch (Exception e)
 				{
-					if (null != _logFile) _logFile.Write("Output CShape File Error: \"{0}\"\n", e.ToString());
+					Console.WriteLine("Output CShape File Error: \"{0}\"", e.ToString());
 					goto Failed;
 				}
 			}
@@ -103,7 +102,7 @@ namespace Csv2Bin
 		private static void FinalizeLogFile()
 		{
 			if (null == _logFile) return;
-			_logFile.Close();
+			_logFile.Dispose();
 			if (!File.Exists(_commandLineOption.outputLogFilePath)) return;
 			var fileInfo = new FileInfo(_commandLineOption.outputLogFilePath);
 			if (0 != fileInfo.Length) return;

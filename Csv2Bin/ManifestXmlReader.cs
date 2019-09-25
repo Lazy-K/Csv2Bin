@@ -225,8 +225,7 @@ namespace ManifestXmlReader
 		public static bool Read(
 			string filePath,
 			ref Header header,
-			ref List<Content> contents,
-			StreamWriter logFile)
+			ref List<Content> contents)
 		{
 			contents.Clear();
 			try
@@ -249,7 +248,7 @@ namespace ManifestXmlReader
 								switch (reader.Name)
 								{
 									case "header":
-										if (!Read_Header(reader, ref header, logFile))
+										if (!Read_Header(reader, ref header))
 										{
 											goto Failed;
 										}
@@ -257,7 +256,7 @@ namespace ManifestXmlReader
 									case "content":
 										{
 											var content = new Content();
-											if (!Read_Content(reader, ref content, logFile))
+											if (!Read_Content(reader, ref content))
 											{
 												goto Failed;
 											}
@@ -268,7 +267,7 @@ namespace ManifestXmlReader
 										// NOP
 										break;
 									default:
-										if (null != logFile) logFile.Write("Manifest Error(root): \"{0}\" element is unknown\n", reader.Name);
+										Console.WriteLine("Manifest Error(root): \"{0}\" element is unknown", reader.Name);
 										goto Failed;
 								}
 								break;
@@ -284,7 +283,7 @@ namespace ManifestXmlReader
 			}
 			catch (Exception e)
 			{
-				if (null != logFile) logFile.Write(e.ToString());
+				Console.WriteLine(e.ToString());
 				goto Failed;
 			}
 			return true;
@@ -295,8 +294,7 @@ namespace ManifestXmlReader
 
 		private static bool Read_Header(
 			XmlReader reader,
-			ref Header header,
-			StreamWriter logFile)
+			ref Header header)
 		{
 			try
 			{
@@ -329,7 +327,7 @@ namespace ManifestXmlReader
 									case "version":
 										if (!float.TryParse(task.Result, out header.version))
 										{
-											if (null != logFile) logFile.Write("Manifest Error(header): \"version\" element is invalid\n");
+											Console.WriteLine("Manifest Error(header): \"version\" element is invalid");
 											goto Failed;
 										}
 										break;
@@ -337,7 +335,7 @@ namespace ManifestXmlReader
 										header.structName = task.Result;
 										break;
 									default:
-										if (null != logFile) logFile.Write("Manifest Error(header): \"{0}\" element is unknown\n", elementName);
+										Console.WriteLine("Manifest Error(header): \"{0}\" element is unknown", elementName);
 										goto Failed;
 								}
 							}
@@ -347,18 +345,18 @@ namespace ManifestXmlReader
 			}
 			catch (Exception e)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(header): {0}", e.ToString());
+				Console.WriteLine("Manifest Error(header): {0}", e.ToString());
 				goto Failed;
 			}
 
 			if (1.0f != header.version)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(header): \"version\" element is invalid\n");
+				Console.WriteLine("Manifest Error(header): \"version\" element is invalid\n");
 				goto Failed;
 			}
 			if (null == header.structName)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(header): \"structName\" element must be required\n");
+				Console.WriteLine("Manifest Error(header): \"structName\" element must be required\n");
 				goto Failed;
 			}
 
@@ -369,8 +367,7 @@ namespace ManifestXmlReader
 
 		private static bool Read_Content(
 			XmlReader reader,
-			ref Content content,
-			StreamWriter logFile)
+			ref Content content)
 		{
 			var isValueTypeSetuped = false;
 			var isLengthSetuped = false;
@@ -416,7 +413,7 @@ namespace ManifestXmlReader
 											}
 											if (valueTypeCount <= i)
 											{
-												if (null != logFile) logFile.Write("Manifest Error(content): \"valueType\" element \"{0}\" is unknown\n", task.Result);
+												Console.WriteLine("Manifest Error(content): \"valueType\" element \"{0}\" is unknown", task.Result);
 												goto Failed;
 											}
 											isValueTypeSetuped = true;
@@ -425,7 +422,7 @@ namespace ManifestXmlReader
 									case "length":
 										if (!Int32.TryParse(task.Result, out content.length))
 										{
-											if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\" is invalid\n", task.Result);
+											Console.WriteLine("Manifest Error(content): \"length\" element \"{0}\" is invalid", task.Result);
 											goto Failed;
 										}
 										isLengthSetuped = true;
@@ -437,7 +434,7 @@ namespace ManifestXmlReader
 										content.structBitsName = task.Result;
 										break;
 									default:
-										if (null != logFile) logFile.Write("Manifest Error(content): \"{0}\" element is unknown\n", elementName);
+										Console.WriteLine("Manifest Error(content): \"{0}\" element is unknown", elementName);
 										goto Failed;
 
 								}
@@ -448,13 +445,13 @@ namespace ManifestXmlReader
 			}
 			catch (Exception e)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(content): {0}", e.ToString());
+				Console.WriteLine("Manifest Error(content): {0}", e.ToString());
 				goto Failed;
 			}
 
 			if (!isValueTypeSetuped)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(content): \"valueType\" element must be required\n");
+				Console.WriteLine("Manifest Error(content): \"valueType\" element must be required");
 				goto Failed;
 			}
 
@@ -463,31 +460,31 @@ namespace ManifestXmlReader
 				case ValueType.utf16:
 					if (!isLengthSetuped)
 					{
-						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"\n", content.valueType.ToString());
+						Console.WriteLine("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"", content.valueType.ToString());
 						goto Failed;
 					}
 					if (0 >= content.length)
 					{
-						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0<length] for valueType \"{1}\"\n", content.length, content.valueType.ToString());
+						Console.WriteLine("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0<length] for valueType \"{1}\"", content.length, content.valueType.ToString());
 						goto Failed;
 					}
 					break;
 				case ValueType.bits32:
 					if (!isLengthSetuped)
 					{
-						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"\n", content.valueType.ToString());
+						Console.WriteLine("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"", content.valueType.ToString());
 						goto Failed;
 					}
 					if (0/*0は強制ビットフィールドスプリットで許可*/ > content.length || 15/*BitVector32のSection引数制限*/ < content.length)
 					{
-						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0|1<=length<=15] for valueType \"{1}\"\n", content.length, content.valueType.ToString());
+						Console.WriteLine("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0|1<=length<=15] for valueType \"{1}\"", content.length, content.valueType.ToString());
 						goto Failed;
 					}
 					break;
 				default:
 					if (isLengthSetuped)
 					{
-						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element is not supported for valueType \"{0}\"\n", content.valueType.ToString());
+						Console.WriteLine("Manifest Error(content): \"length\" element is not supported for valueType \"{0}\"", content.valueType.ToString());
 						goto Failed;
 					}
 					break;

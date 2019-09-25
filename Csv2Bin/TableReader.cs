@@ -12,8 +12,7 @@ namespace TableReader
 			string filePath,
 			List<ManifestXmlReader.Content> manifestContents,
 			ref List<byte> dest,
-			ref UInt32 numRecords,
-			TextWriter logFile)
+			ref UInt32 numRecords)
 		{
 			numRecords = 0;
 			dest.Clear();
@@ -28,12 +27,12 @@ namespace TableReader
 					}
 					if (!reader.Read())
 					{
-						if (null != logFile) logFile.Write("Read Table Error(Line={0}): Header read error", lineNo);
+						Console.WriteLine("Read Table Error(Line={0}): Header read error", lineNo);
 						goto Failed;
 					}
 					if (!reader.ReadHeader())
 					{
-						if (null != logFile) logFile.Write("Read Table Error(Line={0}): Header read error", lineNo);
+						Console.WriteLine("Read Table Error(Line={0}): Header read error", lineNo);
 						goto Failed;
 					}
 
@@ -73,14 +72,11 @@ namespace TableReader
 										{
 											if (!sbyte.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -94,14 +90,11 @@ namespace TableReader
 										{
 											if (!byte.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -115,14 +108,11 @@ namespace TableReader
 										{
 											if (!Int16.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -136,14 +126,11 @@ namespace TableReader
 										{
 											if (!UInt16.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -157,14 +144,11 @@ namespace TableReader
 										{
 											if (!Int32.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -178,14 +162,11 @@ namespace TableReader
 										{
 											if (!UInt32.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -199,14 +180,11 @@ namespace TableReader
 										{
 											if (!float.TryParse(field, out value))
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
-														lineNo,
-														content.valueName,
-														field,
-														content.valueType.ToString());
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" value \"{2}\" parse error by \"{3}\"",
+													lineNo,
+													content.valueName,
+													field,
+													content.valueType.ToString());
 												goto Failed;
 											}
 										}
@@ -220,13 +198,10 @@ namespace TableReader
 									{
 										if (0 >= content.length)
 										{
-											if (null != logFile)
-											{
-												logFile.Write("Read Table Error(Line={0}): \"{1}\" length \"{2}\" is invalid",
-													lineNo,
-													content.valueType.ToString(),
-													content.length);
-											}
+											Console.WriteLine("Read Table Error(Line={0}): \"{1}\" length \"{2}\" is invalid",
+												lineNo,
+												content.valueType.ToString(),
+												content.length);
 											goto Failed;
 										}
 
@@ -279,13 +254,10 @@ namespace TableReader
 
 										if (0 > content.length) // length=0の場合は強制ビットフィールドスプリット
 										{
-											if (null != logFile)
-											{
-												logFile.Write("Read Table Error(Line={0}): \"{1}\" length \"{2}\" is invalid",
-													lineNo,
-													content.valueType.ToString(),
-													content.length);
-											}
+											Console.WriteLine("Read Table Error(Line={0}): \"{1}\" length \"{2}\" is invalid",
+												lineNo,
+												content.valueType.ToString(),
+												content.length);
 											goto Failed;
 										}
 
@@ -304,13 +276,10 @@ namespace TableReader
 											bitflagsShift += content.length;
 											if (BitsSize < bitflagsShift)
 											{
-												if (null != logFile)
-												{
-													logFile.Write("Read Table Error(Line={0}): \"{1}\" bits size over {2}[32>=bits]",
-														lineNo,
-														content.valueType.ToString(),
-														bitflagsShift);
-												}
+												Console.WriteLine("Read Table Error(Line={0}): \"{1}\" bits size over {2}[32>=bits]",
+													lineNo,
+													content.valueType.ToString(),
+													bitflagsShift);
 												goto Failed;
 											}
 										}
@@ -337,7 +306,7 @@ namespace TableReader
 			}
 			catch (Exception e)
 			{
-				if (null != logFile) logFile.Write("Manifest Error(header): {0}", e.ToString());
+				Console.WriteLine("Manifest Error(header): {0}", e.ToString());
 				goto Failed;
 			}
 			return true;

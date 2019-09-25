@@ -167,7 +167,7 @@ namespace TableReader
 								// Bits Type
 								case ManifestXmlReader.ValueType.bits32:
 									{
-										const int size = 32;
+										const int BitsSize = 32;
 										Int32 value = 0;
 										if (content.valueName != null)
 										{
@@ -190,8 +190,8 @@ namespace TableReader
 										bitflags = (bitflags | ((value & mask) << bitflagsShift));
 
 										bitflagsShift += content.length;
-										if (size < bitflagsShift) goto Failed;
-										if (size == bitflagsShift)
+										if (BitsSize < bitflagsShift) goto Failed;
+										if (BitsSize == bitflagsShift)
 										{
 											bitflagsProcessing = false;
 											binary.AddRange(BitConverter.GetBytes(bitflags));

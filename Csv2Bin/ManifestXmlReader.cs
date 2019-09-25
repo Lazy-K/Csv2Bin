@@ -1,11 +1,9 @@
-﻿#define ENABLE_DEBUG_LOG
+﻿//#define ENABLE_DEBUG_LOG
 
-using CsvHelper;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace ManifestXmlReader
@@ -56,35 +54,9 @@ namespace ManifestXmlReader
 
 		static public string GenerateCode(ref Header header, ref List<Content> contents)
 		{
-			var code = string.Empty;
-
-			code += "using System;\n";
-			code += "using System.Runtime.InteropServices;\n";
-			code += "using System.Collections.Specialized;\n";
-			code += "\n";
-
 			var contentsCount = contents.Count;
-			{
-				var isExitsString = false;
-				for (var i = 0; i < contentsCount; ++i)
-				{
-					if (ValueType.utf16 == contents[i].valueType)
-					{
-						isExitsString = true;
-					}
-				}
-				if (isExitsString)
-				{
-					code += "[StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]\n";
-				}
-				else
-				{
-					code += "[StructLayout(LayoutKind.Sequential, Pack = 1)]\n";
-				}
-			}
-			code += "public readonly struct " + header.structName + "\n";
-			code += "{\n";
-
+			var isExitsString = false;
+			var isExistBitsType = false;
 			var toStringCode = string.Empty;
 			var body = string.Empty;
 			var fieldDummyCount = 0;
@@ -100,33 +72,32 @@ namespace ManifestXmlReader
 					fieldName = string.Format("_reserved_{0:00}", fieldDummyCount++);
 				}
 
-
 				if (ValueType.bits32 == contents[i].valueType)
 				{
+					const int BitsSize = 32;
+					isExistBitsType = true;
 					if (null != contents[i].structFieldName)
 					{
-						var bitsDummyCount = 0;
 						var bits = contents[i].length;
 
 						var prevSectionName = string.Empty;
 						{
-							var isDummyBitsName = false;
-							var bitsName = contents[i].structBitsName;
-							if (null == bitsName)
+							if (null == contents[i].structBitsName)
 							{
-								isDummyBitsName = true;
-								bitsName = string.Format("reserved_{0:00}", bitsDummyCount++);
+								prevSectionName = string.Format("BitVector32.CreateSection({0})", contents[i].length);
 							}
-							var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, bitsName);
-							body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1});\n",
-								sectionName,
-								contents[i].length);
-							prevSectionName = sectionName;
-
-							if (!isDummyBitsName)
+							else
 							{
-								if (0 < toStringCode.Length) toStringCode += "\t\ts += \", \";\n";
-								toStringCode += string.Format("\t\ts += string.Format(\"{0}[{1}]={{0}}\", {0}[{1}]);\n", fieldName, sectionName);
+								var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, contents[i].structBitsName);
+								body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1});\n",
+									sectionName,
+									contents[i].length);
+								prevSectionName = sectionName;
+
+								{
+									var split = 0 < toStringCode.Length ? ", " : string.Empty;
+									toStringCode += string.Format("\t\ts += string.Format(\"{0}{1}[{2}]={{0}}\", {1}[{2}]);\n", split, fieldName, sectionName);
+								}
 							}
 						}
 						var j = i + 1;
@@ -136,33 +107,32 @@ namespace ManifestXmlReader
 							bits += contents[j].length;
 
 							{
-								var isDummyBitsName = false;
-								var bitsName = contents[j].structBitsName;
-								if (null == bitsName)
+								if (null == contents[j].structBitsName)
 								{
-									isDummyBitsName = true;
-									if (32 == bits)
+									if (BitsSize == bits)
 									{
 										++j;
 										break;
 									}
-									bitsName = string.Format("reserved_{0:00}", bitsDummyCount++);
+									prevSectionName = string.Format("BitVector32.CreateSection({0}, {1})", contents[j].length, prevSectionName);
 								}
-								var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, bitsName);
-								body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1}, {2});\n",
-									sectionName,
-									contents[j].length,
-									prevSectionName);
-								prevSectionName = sectionName;
-
-								if (!isDummyBitsName)
+								else
 								{
-									if (0 < toStringCode.Length) toStringCode += "\t\ts += \", \";\n";
-									toStringCode += string.Format("\t\ts += string.Format(\"{0}[{1}]={{0}}\", {0}[{1}]);\n", fieldName, sectionName);
+									var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, contents[j].structBitsName);
+									body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1}, {2});\n",
+										sectionName,
+										contents[j].length,
+										prevSectionName);
+									prevSectionName = sectionName;
+
+									{
+										var split = 0 < toStringCode.Length ? ", " : string.Empty;
+										toStringCode += string.Format("\t\ts += string.Format(\"{0}{1}[{2}]={{0}}\", {1}[{2}]);\n", split, fieldName, sectionName);
+									}
 								}
 							}
 
-							if (32 == bits)
+							if (BitsSize == bits)
 							{
 								++j;
 								break;
@@ -175,8 +145,8 @@ namespace ManifestXmlReader
 				{
 					if (!isDummyFieldName)
 					{
-						if (0 < toStringCode.Length) toStringCode += "\t\ts += \", \";\n";
-						toStringCode += string.Format("\t\ts += string.Format(\"{0}={{0}}\", {0});\n", fieldName);
+						var split = 0 < toStringCode.Length ? ", " : string.Empty;
+						toStringCode += string.Format("\t\ts += string.Format(\"{0}{1}={{0}}\", {1});\n", split, fieldName);
 					}
 				}
 
@@ -186,6 +156,7 @@ namespace ManifestXmlReader
 
 				if (ValueType.utf16 == contents[i].valueType)
 				{
+					isExitsString = true;
 					body += string.Format("\t[MarshalAs(UnmanagedType.ByValTStr, SizeConst = {0})]\n", contents[i].length);
 				}
 				body += string.Format("\t{0} readonly {1} {2};\n", scope, codeValueType, fieldName);
@@ -193,7 +164,32 @@ namespace ManifestXmlReader
 				i = next;
 			}
 
+			var code = string.Empty;
 			{
+				//-------------------------------------------
+				// Header code
+				code += "using System;\n";
+				code += "using System.Runtime.InteropServices;\n";
+				if (isExistBitsType)
+				{
+					code += "using System.Collections.Specialized;\n";
+				}
+				code += "\n";
+
+				//-------------------------------------------
+				// Struct begin code
+				if (isExitsString)
+				{
+					code += "[StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]\n";
+				}
+				else
+				{
+					code += "[StructLayout(LayoutKind.Sequential, Pack = 1)]\n";
+				}
+				code += "public readonly struct " + header.structName + "\n";
+				code += "{\n";
+
+
 				code += "\tpublic override string ToString()\n";
 				code += "\t{\n";
 				code += "\t\tvar s = string.Empty;\n";
@@ -201,9 +197,15 @@ namespace ManifestXmlReader
 				code += "\t\treturn s;\n";
 				code += "\t}\n";
 				code += "\n";
+
+				//-------------------------------------------
+				// Struct body code
+				code += body;
+
+				//-------------------------------------------
+				// Struct end code
+				code += "}\n";
 			}
-			code += body;
-			code += "}\n";
 			return code;
 		}
 	}

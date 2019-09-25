@@ -65,85 +65,85 @@ namespace BinReadTest
 
 		static private Cont[] _cont;
 
-        static int Test1(in string filePath)
-        {
+		static int Test1(in string filePath)
+		{
 			try
 			{
-                using (var fs = new FileStream(filePath, FileMode.Open))
-                {
-                    // Console.WriteLine("fileSize={0}", fs.Length);
-                    var buff = new byte[256];
-                    var pos = fs.Seek(-sizeof(UInt32) * 2, SeekOrigin.End);
-                    //Console.WriteLine("pos={0}", pos);
-                    if (sizeof(UInt32) * 2 != fs.Read(buff, 0, sizeof(UInt32) * 2))
-                    {
-                        //Console.WriteLine("Error1");
-                        goto Failed;
-                    }
-                    var size = BitConverter.ToUInt32(buff, sizeof(UInt32) * 0);
-                    //Console.WriteLine("size={0}", size);
-                    var len = BitConverter.ToUInt32(buff, sizeof(UInt32) * 1);
-                    //Console.WriteLine("size={0}", len);
-                    if (size != Marshal.SizeOf<Cont>())
-                    {
-                        //Console.WriteLine("Error2");
-                        goto Failed;
-                    }
+				using (var fs = new FileStream(filePath, FileMode.Open))
+				{
+					// Console.WriteLine("fileSize={0}", fs.Length);
+					var buff = new byte[256];
+					var pos = fs.Seek(-sizeof(UInt32) * 2, SeekOrigin.End);
+					//Console.WriteLine("pos={0}", pos);
+					if (sizeof(UInt32) * 2 != fs.Read(buff, 0, sizeof(UInt32) * 2))
+					{
+						//Console.WriteLine("Error1");
+						goto Failed;
+					}
+					var size = BitConverter.ToUInt32(buff, sizeof(UInt32) * 0);
+					//Console.WriteLine("size={0}", size);
+					var len = BitConverter.ToUInt32(buff, sizeof(UInt32) * 1);
+					//Console.WriteLine("size={0}", len);
+					if (size != Marshal.SizeOf<Cont>())
+					{
+						//Console.WriteLine("Error2");
+						goto Failed;
+					}
 
-                    _cont = new Cont[len];
-                    {
-                        pos = fs.Seek(0, SeekOrigin.Begin);
-                        //Console.WriteLine("pos={0}", pos);
-                        for (var i = 0; i < len; ++i)
-                        {
-                            if (size != fs.Read(buff, 0, (int)size))
-                            {
-                                //Console.WriteLine("Error3");
-                                goto Failed;
-                            }
-                            //Console.WriteLine("pos={0}", pos);
-                            var gch = GCHandle.Alloc(buff, GCHandleType.Pinned);
-                            _cont[i] = Marshal.PtrToStructure<Cont>(gch.AddrOfPinnedObject());
-                            gch.Free();
-                        }
-                    }
-                }
+					_cont = new Cont[len];
+					{
+						pos = fs.Seek(0, SeekOrigin.Begin);
+						//Console.WriteLine("pos={0}", pos);
+						for (var i = 0; i < len; ++i)
+						{
+							if (size != fs.Read(buff, 0, (int)size))
+							{
+								//Console.WriteLine("Error3");
+								goto Failed;
+							}
+							//Console.WriteLine("pos={0}", pos);
+							var gch = GCHandle.Alloc(buff, GCHandleType.Pinned);
+							_cont[i] = Marshal.PtrToStructure<Cont>(gch.AddrOfPinnedObject());
+							gch.Free();
+						}
+					}
+				}
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
 				goto Failed;
-            }
-            return 0;
-            Failed:
-            return 1;
-        }
+			}
+			return 0;
+			Failed:
+			return 1;
+		}
 
-        static int Test2(in string filePath)
-        {
+		static int Test2(in string filePath)
+		{
 			try
-            {
-                var binary = System.IO.File.ReadAllBytes(filePath);
-                var size = Marshal.SizeOf<Cont>();
-                if (0 != (binary.Length % size))
-                {
-                    //Console.WriteLine("Error1");
-                    goto Failed;
-                }
-                var len = binary.Length / size;
-                _cont = new Cont[len];
-                {
-                    var gch = GCHandle.Alloc(binary, GCHandleType.Pinned);
-                    var ptr = gch.AddrOfPinnedObject();
-                    for (var i = 0; i < len; ++i)
-                    {
-                        var ins = new IntPtr(ptr.ToInt64() + i * size);
-                        _cont[i] = Marshal.PtrToStructure<Cont>(ins);
-                    }
-                    gch.Free();
-                }
-            }
+			{
+				var binary = System.IO.File.ReadAllBytes(filePath);
+				var size = Marshal.SizeOf<Cont>();
+				if (0 != (binary.Length % size))
+				{
+					//Console.WriteLine("Error1");
+					goto Failed;
+				}
+				var len = binary.Length / size;
+				_cont = new Cont[len];
+				{
+					var gch = GCHandle.Alloc(binary, GCHandleType.Pinned);
+					var ptr = gch.AddrOfPinnedObject();
+					for (var i = 0; i < len; ++i)
+					{
+						var ins = new IntPtr(ptr.ToInt64() + i * size);
+						_cont[i] = Marshal.PtrToStructure<Cont>(ins);
+					}
+					gch.Free();
+				}
+			}
 			catch (Exception e)
 			{
 				Console.WriteLine(e);
@@ -151,17 +151,16 @@ namespace BinReadTest
 			}
 
 			return 0;
-            Failed:
-            return 1;
-        }
+			Failed:
+			return 1;
+		}
 
 		static int Main(string[] args)
 		{
-            int ret = 0;
 #if true
-            ret = Test1("../../../Csv2Bin/make/table1.bin");
+			var ret = Test1("../../../Csv2Bin/make/table1.bin");
 #else
-            ret = Test2("../../../Csv2Bin/make/table2.bin");
+			var ret = Test2("../../../Csv2Bin/make/table2.bin");
 #endif
 			Console.WriteLine("ret={0}", ret);
 			if (null != _cont)
@@ -171,7 +170,7 @@ namespace BinReadTest
 					Console.WriteLine(_cont[i].ToString());
 				}
 			}
-            return ret;
-        }
-    }
+			return ret;
+		}
+	}
 }

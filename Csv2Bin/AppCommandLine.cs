@@ -14,6 +14,8 @@ namespace AppCommandLine
 		public bool isAppendSummary { get; set; }
 		[Option("outcs", Required = false, HelpText = "Set output cs file path.")]
 		public string outputCsFilePath { get; set; }
+		[Option("log", Required = false, HelpText = "Set output log file path.")]
+		public string outputLogFilePath { get; set; }
 	}
 
 	public class Parser

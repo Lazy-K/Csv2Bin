@@ -52,7 +52,9 @@ namespace ManifestXmlReader
 			"BitVector32" //bits32,
 		};
 
-		static public string GenerateCode(ref Header header, ref List<Content> contents)
+		static public string GenerateCode(
+			ref Header header,
+			ref List<Content> contents)
 		{
 			var contentsCount = contents.Count;
 			var isExitsString = false;
@@ -72,7 +74,7 @@ namespace ManifestXmlReader
 					fieldName = string.Format("_reserved_{0:00}", fieldDummyCount++);
 				}
 
-				if (ValueType.bits32 == contents[i].valueType)
+				if (ValueType.bits32 == contents[i].valueType && 0 != contents[i].length/*length=0の場合はビットフィールド強制スプリット*/)
 				{
 					const int BitsSize = 32;
 					isExistBitsType = true;
@@ -105,6 +107,12 @@ namespace ManifestXmlReader
 						for (; j < contentsCount; ++j)
 						{
 							if (ValueType.bits32 != contents[j].valueType) break;
+
+							if (0 == contents[j].length/*length=0の場合はビットフィールド強制スプリット*/)
+							{
+								++j;
+								break;
+							}
 							bits += contents[j].length;
 
 							{
@@ -214,7 +222,11 @@ namespace ManifestXmlReader
 
 	public class Reader
 	{
-		public bool Read(string filePath, ref Header header, ref List<Content> contents)
+		public static bool Read(
+			string filePath,
+			ref Header header,
+			ref List<Content> contents,
+			StreamWriter logFile)
 		{
 			contents.Clear();
 			try
@@ -224,7 +236,6 @@ namespace ManifestXmlReader
 
 				using (var reader = XmlReader.Create(new StreamReader(filePath, Encoding.UTF8), settings))
 				{
-					var elementName = string.Empty;
 					while (true)
 					{
 						{
@@ -235,13 +246,10 @@ namespace ManifestXmlReader
 						switch (reader.NodeType)
 						{
 							case XmlNodeType.Element:
-#if ENABLE_DEBUG_LOG
-								Console.WriteLine("Start Element {0}", reader.Name);
-#endif
 								switch (reader.Name)
 								{
 									case "header":
-										if (!Read_Header(reader, ref header))
+										if (!Read_Header(reader, ref header, logFile))
 										{
 											goto Failed;
 										}
@@ -249,33 +257,26 @@ namespace ManifestXmlReader
 									case "content":
 										{
 											var content = new Content();
-											if (!Read_Content(reader, ref content))
+											if (!Read_Content(reader, ref content, logFile))
 											{
 												goto Failed;
 											}
 											contents.Add(content);
 										}
 										break;
+									case "root":
+										// NOP
+										break;
+									default:
+										if (null != logFile) logFile.Write("Manifest Error(root): \"{0}\" element is unknown\n", reader.Name);
+										goto Failed;
 								}
 								break;
 							case XmlNodeType.Text:
 								{
 									var task = reader.GetValueAsync();
 									task.Wait();
-#if ENABLE_DEBUG_LOG
-									Console.WriteLine("Text Node: {0}, {1}", reader.Name, task.Result);
-#endif
 								}
-								break;
-							case XmlNodeType.EndElement:
-#if ENABLE_DEBUG_LOG
-								Console.WriteLine("End Element {0}", reader.Name);
-#endif
-								break;
-							default:
-#if ENABLE_DEBUG_LOG
-								Console.WriteLine("Other node {0} with value {1}", reader.NodeType, reader.Value);
-#endif
 								break;
 						}
 					}
@@ -283,7 +284,8 @@ namespace ManifestXmlReader
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);
+				if (null != logFile) logFile.Write(e.ToString());
+				goto Failed;
 			}
 			return true;
 			Failed:
@@ -291,133 +293,208 @@ namespace ManifestXmlReader
 			return false;
 		}
 
-		private bool Read_Header(XmlReader reader, ref Header header)
+		private static bool Read_Header(
+			XmlReader reader,
+			ref Header header,
+			StreamWriter logFile)
 		{
-			var elementName = string.Empty;
-			while (true)
+			try
 			{
+				var elementName = string.Empty;
+				var isExit = false;
+				while (!isExit)
 				{
-					var task = reader.ReadAsync();
-					task.Wait();
-					if (!task.Result) break;
-				}
-				switch (reader.NodeType)
-				{
-					case XmlNodeType.Element:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("Start Element {0}", reader.Name);
-#endif
-						elementName = reader.Name;
-						break;
-					case XmlNodeType.EndElement:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("End Element {0}", reader.Name);
-#endif
-						if ("header" == reader.Name)
-						{
-							return true;
-						}
-						break;
-					case XmlNodeType.Text:
-						{
-							var task = reader.GetValueAsync();
-							task.Wait();
-#if ENABLE_DEBUG_LOG
-							Console.WriteLine("Text Node: {0}", task.Result);
-#endif
-							switch (elementName)
+					{
+						var task = reader.ReadAsync();
+						task.Wait();
+						if (!task.Result) break;
+					}
+					switch (reader.NodeType)
+					{
+						case XmlNodeType.Element:
+							elementName = reader.Name;
+							break;
+						case XmlNodeType.EndElement:
+							if ("header" == reader.Name)
 							{
-								case "version":
-									header.version = float.Parse(task.Result);
-									break;
-								case "structName":
-									header.structName = task.Result;
-									break;
+								isExit = true;
 							}
-						}
-						break;
-					default:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("Other node {0} with value {1}",
-										reader.NodeType, reader.Value);
-#endif
-						break;
+							break;
+						case XmlNodeType.Text:
+							{
+								var task = reader.GetValueAsync();
+								task.Wait();
+								switch (elementName)
+								{
+									case "version":
+										if (!float.TryParse(task.Result, out header.version))
+										{
+											if (null != logFile) logFile.Write("Manifest Error(header): \"version\" element is invalid\n");
+											goto Failed;
+										}
+										break;
+									case "structName":
+										header.structName = task.Result;
+										break;
+									default:
+										if (null != logFile) logFile.Write("Manifest Error(header): \"{0}\" element is unknown\n", elementName);
+										goto Failed;
+								}
+							}
+							break;
+					}
 				}
 			}
+			catch (Exception e)
+			{
+				if (null != logFile) logFile.Write("Manifest Error(header): {0}", e.ToString());
+				goto Failed;
+			}
+
+			if (1.0f != header.version)
+			{
+				if (null != logFile) logFile.Write("Manifest Error(header): \"version\" element is invalid\n");
+				goto Failed;
+			}
+			if (null == header.structName)
+			{
+				if (null != logFile) logFile.Write("Manifest Error(header): \"structName\" element must be required\n");
+				goto Failed;
+			}
+
+			return true;
+			Failed:
 			return false;
 		}
 
-		private bool Read_Content(XmlReader reader, ref Content content)
+		private static bool Read_Content(
+			XmlReader reader,
+			ref Content content,
+			StreamWriter logFile)
 		{
-			var elementName = string.Empty;
-			while (true)
+			var isValueTypeSetuped = false;
+			var isLengthSetuped = false;
+			try
 			{
+				var elementName = string.Empty;
+				var isExit = false;
+				while (!isExit)
 				{
-					var task = reader.ReadAsync();
-					task.Wait();
-					if (!task.Result) break;
-				}
-				switch (reader.NodeType)
-				{
-					case XmlNodeType.Element:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("Start Element {0}", reader.Name);
-#endif
-						elementName = reader.Name;
-						break;
-					case XmlNodeType.EndElement:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("End Element {0}", reader.Name);
-#endif
-						if ("content" == reader.Name)
-						{
-							return true;
-						}
-						break;
-					case XmlNodeType.Text:
-						{
-							var task = reader.GetValueAsync();
-							task.Wait();
-#if ENABLE_DEBUG_LOG
-							Console.WriteLine("Text Node: {0}", task.Result);
-#endif
-							switch (elementName)
+					{
+						var task = reader.ReadAsync();
+						task.Wait();
+						if (!task.Result) break;
+					}
+					switch (reader.NodeType)
+					{
+						case XmlNodeType.Element:
+							elementName = reader.Name;
+							break;
+						case XmlNodeType.EndElement:
+							if ("content" == reader.Name)
 							{
-								case "valueName":
-									content.valueName = task.Result;
-									break;
-								case "valueType":
-									{
-										var valueTypeCount = (int)ValueType.Length;
-										var i = 0;
-										for (; i < valueTypeCount; ++i)
-										{
-											content.valueType = (ValueType)i;
-											if (content.valueType.ToString() == task.Result) break;
-										}
-										if (valueTypeCount <= i) return false;
-									}
-									break;
-								case "length":
-									content.length = Int32.Parse(task.Result);
-									break;
-
-								case "structFieldName":
-									content.structFieldName = task.Result;
-									break;
-								case "structBitsName":
-									content.structBitsName = task.Result;
-									break;
+								isExit = true;
 							}
-						}
-						break;
-					default:
-#if ENABLE_DEBUG_LOG
-						Console.WriteLine("Other node {0} with value {1}", reader.NodeType, reader.Value);
-#endif
-						break;
+							break;
+						case XmlNodeType.Text:
+							{
+								var task = reader.GetValueAsync();
+								task.Wait();
+								switch (elementName)
+								{
+									case "valueName":
+										content.valueName = task.Result;
+										break;
+									case "valueType":
+										{
+											var valueTypeCount = (int)ValueType.Length;
+											var i = 0;
+											for (; i < valueTypeCount; ++i)
+											{
+												content.valueType = (ValueType)i;
+												if (content.valueType.ToString() == task.Result) break;
+											}
+											if (valueTypeCount <= i)
+											{
+												if (null != logFile) logFile.Write("Manifest Error(content): \"valueType\" element \"{0}\" is unknown\n", task.Result);
+												goto Failed;
+											}
+											isValueTypeSetuped = true;
+										}
+										break;
+									case "length":
+										if (!Int32.TryParse(task.Result, out content.length))
+										{
+											if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\" is invalid\n", task.Result);
+											goto Failed;
+										}
+										isLengthSetuped = true;
+										break;
+									case "structFieldName":
+										content.structFieldName = task.Result;
+										break;
+									case "structBitsName":
+										content.structBitsName = task.Result;
+										break;
+									default:
+										if (null != logFile) logFile.Write("Manifest Error(content): \"{0}\" element is unknown\n", elementName);
+										goto Failed;
+
+								}
+							}
+							break;
+					}
 				}
 			}
+			catch (Exception e)
+			{
+				if (null != logFile) logFile.Write("Manifest Error(content): {0}", e.ToString());
+				goto Failed;
+			}
+
+			if (!isValueTypeSetuped)
+			{
+				if (null != logFile) logFile.Write("Manifest Error(content): \"valueType\" element must be required\n");
+				goto Failed;
+			}
+
+			switch (content.valueType)
+			{
+				case ValueType.utf16:
+					if (!isLengthSetuped)
+					{
+						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"\n", content.valueType.ToString());
+						goto Failed;
+					}
+					if (0 >= content.length)
+					{
+						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0<length] for valueType \"{1}\"\n", content.length, content.valueType.ToString());
+						goto Failed;
+					}
+					break;
+				case ValueType.bits32:
+					if (!isLengthSetuped)
+					{
+						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element must be required for valueType \"{0}\"\n", content.valueType.ToString());
+						goto Failed;
+					}
+					if (0/*0は強制ビットフィールドスプリットで許可*/ > content.length || 15/*BitVector32のSection引数制限*/ < content.length)
+					{
+						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element \"{0}\"\n is invalid range[0|1<=length<=15] for valueType \"{1}\"\n", content.length, content.valueType.ToString());
+						goto Failed;
+					}
+					break;
+				default:
+					if (isLengthSetuped)
+					{
+						if (null != logFile) logFile.Write("Manifest Error(content): \"length\" element is not supported for valueType \"{0}\"\n", content.valueType.ToString());
+						goto Failed;
+					}
+					break;
+			}
+
+			return true;
+			Failed:
 			return false;
 		}
 	}

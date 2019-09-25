@@ -82,16 +82,17 @@ namespace ManifestXmlReader
 
 						var prevSectionName = string.Empty;
 						{
+							var maxValue = ~(~(0x01 << contents[i].length) + 1);
 							if (null == contents[i].structBitsName)
 							{
-								prevSectionName = string.Format("BitVector32.CreateSection({0})", contents[i].length);
+								prevSectionName = string.Format("BitVector32.CreateSection(0x{0:X4})", maxValue);
 							}
 							else
 							{
 								var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, contents[i].structBitsName);
-								body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1});\n",
+								body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection(0x{1:X4});\n",
 									sectionName,
-									contents[i].length);
+									maxValue);
 								prevSectionName = sectionName;
 
 								{
@@ -107,6 +108,7 @@ namespace ManifestXmlReader
 							bits += contents[j].length;
 
 							{
+								var maxValue = ~(~(0x01 << contents[j].length) + 1);
 								if (null == contents[j].structBitsName)
 								{
 									if (BitsSize == bits)
@@ -114,14 +116,14 @@ namespace ManifestXmlReader
 										++j;
 										break;
 									}
-									prevSectionName = string.Format("BitVector32.CreateSection({0}, {1})", contents[j].length, prevSectionName);
+									prevSectionName = string.Format("BitVector32.CreateSection(0x{0:X4}, {1})", maxValue, prevSectionName);
 								}
 								else
 								{
 									var sectionName = string.Format("{0}_{1}", contents[i].structFieldName, contents[j].structBitsName);
-									body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection({1}, {2});\n",
+									body += string.Format("\tpublic static readonly BitVector32.Section {0} = BitVector32.CreateSection(0x{1:X4}, {2});\n",
 										sectionName,
-										contents[j].length,
+										maxValue,
 										prevSectionName);
 									prevSectionName = sectionName;
 

@@ -58,13 +58,13 @@
   <content>
     <valueName>field5</valueName>
     <valueType>bits32</valueType>
-    <length>24</length>
+    <length>12</length>
     <structFieldName>flags2</structFieldName>
   </content>
   <content>
     <valueName>field5</valueName>
     <valueType>bits32</valueType>
-    <length>1</length>
+    <length>5</length>
     <structBitsName>bits1</structBitsName>
   </content>  
   

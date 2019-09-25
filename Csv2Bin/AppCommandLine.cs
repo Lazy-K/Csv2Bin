@@ -4,11 +4,11 @@ namespace AppCommandLine
 {
 	public class Option
 	{
-		[Option("table", Required = true, HelpText = "Set input table file path.")]
+		[Option("table", Required = false, HelpText = "Set input table file path.")]
 		public string tableFilePath { get; set; }
 		[Option("manifest", Required = true, HelpText = "Set manifest file path.")]
 		public string manifestFilePath { get; set; }
-		[Option("out", Required = true, HelpText = "Set output binary file path.")]
+		[Option("out", Required = false, HelpText = "Set output binary file path.")]
 		public string outputBinaryFilePath { get; set; }
 		[Option("appendSummary", Required = false, HelpText = "Set append summary enabled.")]
 		public bool isAppendSummary { get; set; }

@@ -38,38 +38,41 @@ namespace Csv2Bin
 				}
 			}
 
-			var binary = new List<byte>();
-			UInt32 numRecords = 0;
-			{ // Read table file and convert binary by manifest
-				if (!TableReader.Reader.Read(
-					_commandLineOption.tableFilePath,
-					manifestContents,
-					ref binary,
-					ref numRecords,
-					_logFile))
-				{
-					goto Failed;
-				}
-			}
-
-			{ // Write binary file
-				try
-				{
-					using (var writer = new BinaryWriter(new FileStream(_commandLineOption.outputBinaryFilePath, FileMode.Create)))
+			if (null != _commandLineOption.tableFilePath && null != _commandLineOption.outputBinaryFilePath)
+			{
+				var binary = new List<byte>();
+				UInt32 numRecords = 0;
+				{ // Read table file and convert binary by manifest
+					if (!TableReader.Reader.Read(
+						_commandLineOption.tableFilePath,
+						manifestContents,
+						ref binary,
+						ref numRecords,
+						_logFile))
 					{
-						writer.Write(binary.ToArray());
-						if (_commandLineOption.isAppendSummary)
-						{ // Append summary
-							UInt32 size = (UInt32)binary.Count / numRecords;
-							writer.Write(size);
-							writer.Write(numRecords);
-						}
+						goto Failed;
 					}
 				}
-				catch (Exception e)
-				{
-					if (null != _logFile) _logFile.Write("Output Binary File Error: \"{0}\"\n", e.ToString());
-					goto Failed;
+
+				{ // Write binary file
+					try
+					{
+						using (var writer = new BinaryWriter(new FileStream(_commandLineOption.outputBinaryFilePath, FileMode.Create)))
+						{
+							writer.Write(binary.ToArray());
+							if (_commandLineOption.isAppendSummary)
+							{ // Append summary
+								UInt32 size = (UInt32)binary.Count / numRecords;
+								writer.Write(size);
+								writer.Write(numRecords);
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						if (null != _logFile) _logFile.Write("Output Binary File Error: \"{0}\"\n", e.ToString());
+						goto Failed;
+					}
 				}
 			}
 

@@ -29,7 +29,7 @@ namespace Csv2Bin
 			var manifestHeader = new ManifestHeader();
 			var manifestContents = new List<ManifestContent>();
 			{ // Read manifest file
-				if (!Manifest.Parse(
+				if (!Manifest.Read(
 					_commandLineOption.manifestFilePath,
 					ref manifestHeader,
 					ref manifestContents))
@@ -37,6 +37,20 @@ namespace Csv2Bin
 					goto Failed;
 				}
 			}
+
+#if false // TEST
+			{ // Write manifest file
+				if (!Manifest.Write(
+					_commandLineOption.manifestFilePath + "_test.xml",
+					manifestHeader,
+					manifestContents))
+				{
+					goto Failed;
+				}
+
+			}
+			return 0;
+#endif
 
 			if (null != _commandLineOption.tableFilePath && null != _commandLineOption.outputBinaryFilePath)
 			{

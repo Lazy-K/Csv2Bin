@@ -172,6 +172,8 @@
     <Compile Include="..\Csv2Bin\Manifest.cs" />
     <Compile Include="..\Csv2Bin\Manifest_GenerateBinary.cs" />
     <Compile Include="..\Csv2Bin\Manifest_GenerateCode.cs" />
+    <Compile Include="..\Csv2Bin\Manifest_Read.cs" />
+    <Compile Include="..\Csv2Bin\Manifest_Write.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

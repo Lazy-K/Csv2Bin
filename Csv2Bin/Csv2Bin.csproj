@@ -79,6 +79,8 @@
     <Compile Include="AppCommandLine.cs" />
     <Compile Include="Manifest.cs" />
     <Compile Include="Manifest_GenerateCode.cs" />
+    <Compile Include="Manifest_Read.cs" />
+    <Compile Include="Manifest_Write.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Manifest_GenerateBinary.cs" />

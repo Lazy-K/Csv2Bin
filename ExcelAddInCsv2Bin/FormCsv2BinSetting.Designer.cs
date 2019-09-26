@@ -43,16 +43,8 @@
 			this.manifestDataGridView.RowTemplate.Height = 21;
 			this.manifestDataGridView.Size = new System.Drawing.Size(565, 297);
 			this.manifestDataGridView.TabIndex = 0;
-			this.manifestDataGridView.CellLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.manifestDataGridView_CellLeave);
-			this.manifestDataGridView.CellParsing += new System.Windows.Forms.DataGridViewCellParsingEventHandler(this.manifestDataGridView_CellParsing);
-			this.manifestDataGridView.CellStateChanged += new System.Windows.Forms.DataGridViewCellStateChangedEventHandler(this.manifestDataGridView_CellStateChanged);
 			this.manifestDataGridView.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.manifestDataGridView_CellValidated);
-			this.manifestDataGridView.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.manifestDataGridView_CellValidating);
-			this.manifestDataGridView.ColumnStateChanged += new System.Windows.Forms.DataGridViewColumnStateChangedEventHandler(this.manifestDataGridView_ColumnStateChanged);
 			this.manifestDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.manifestDataGridView_DataError);
-			this.manifestDataGridView.RowLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.manifestDataGridView_RowLeave);
-			this.manifestDataGridView.RowStateChanged += new System.Windows.Forms.DataGridViewRowStateChangedEventHandler(this.manifestDataGridView_RowStateChanged);
-			this.manifestDataGridView.Leave += new System.EventHandler(this.manifestDataGridView_Leave);
 			//
 			// saveManifestButton
 			//

@@ -316,60 +316,12 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void manifestDataGridView_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
-		{
-		}
-
 		private void manifestDataGridView_CellValidated(object sender, DataGridViewCellEventArgs e)
 		{
 			RefreshManifestDataGridViewErrorText(e.RowIndex);
 			saveManifestButton.Enabled = IsValidInputManifestDataGridView();
 		}
 
-		private void manifestDataGridView_CellStateChanged(object sender, DataGridViewCellStateChangedEventArgs e)
-		{
-			//MessageBox.Show("manifestDataGridView_CellStateChanged: " + e.Cell.OwningColumn.Name);
-			//RefreshManifestDataGridViewErrorText(e.Cell.RowIndex);
-			//saveManifestButton.Enabled = IsValidInputManifestDataGridView();
-		}
-
-		private void manifestDataGridView_ColumnStateChanged(object sender, DataGridViewColumnStateChangedEventArgs e)
-		{
-			//MessageBox.Show("manifestDataGridView_ColumnStateChanged: " + e.Column.Name);
-			//RefreshManifestDataGridViewErrorText(e.Column.Index);
-			//saveManifestButton.Enabled = IsValidInputManifestDataGridView();
-		}
-
-		private void manifestDataGridView_RowStateChanged(object sender, DataGridViewRowStateChangedEventArgs e)
-		{
-			//MessageBox.Show("manifestDataGridView_RowStateChanged: " + e.Row.Name);
-			//RefreshManifestDataGridViewErrorText(e.Row.Index);
-			//saveManifestButton.Enabled = IsValidInputManifestDataGridView();
-		}
-
-		private void manifestDataGridView_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
-		{
-			//var dgv = (DataGridView)sender;
-			//MessageBox.Show("manifestDataGridView_CellParsing: " + dgv.Columns[e.ColumnIndex].Name);
-			//RefreshManifestDataGridViewErrorText(e.RowIndex);
-			//saveManifestButton.Enabled = IsValidInputManifestDataGridView();
-		}
-
-		private void manifestDataGridView_Leave(object sender, EventArgs e)
-		{
-			//saveManifestButton.Enabled = IsValidInputManifestDataGridView();
-		}
-
-		private void manifestDataGridView_CellLeave(object sender, DataGridViewCellEventArgs e)
-		{
-			//RefreshManifestDataGridViewErrorText(e.RowIndex);
-		}
-
-		private void manifestDataGridView_RowLeave(object sender, DataGridViewCellEventArgs e)
-		{
-			//RefreshManifestDataGridViewErrorText(e.RowIndex);
-
-		}
 
 		private void FormCsv2BinSetting_Load(object sender, EventArgs e)
 		{

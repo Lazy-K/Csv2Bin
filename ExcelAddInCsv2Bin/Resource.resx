@@ -117,4 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="SR_DATA_GRID_VIEW_MANIFEST_ERROR_TEXT_ROW" xml:space="preserve">
+    <value>行のエラーを修正してください</value>
+  </data>
 </root>

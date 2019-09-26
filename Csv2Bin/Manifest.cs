@@ -36,6 +36,7 @@ namespace Csv2Bin
 		public string structBitsName;
 	}
 
+#if false
 	public partial class Manifest
 	{
 		public static bool IsValid(
@@ -67,7 +68,7 @@ namespace Csv2Bin
 					}
 					else if (ValueType.bits32 == contents[i].valueType)
 					{
-						if (0 > contents[i].length/*0はビットフィールド強制スプリットで許可*/ || 32 < contents[i].length)
+						if (0 > contents[i].length/*0はビットフィールド強制スプリットで許可*/ || 15/*BitVector32のSection引数制限*// < contents[i].length)
 						{
 							isValid = false;
 						}
@@ -95,15 +96,11 @@ namespace Csv2Bin
 							Console.WriteLine("Manifest Error(content No.{0}): structBitsName \"{1}\" must be empty for bits32 type", i + 1, contents[i].structBitsName);
 							return false;
 						}
-						if (null != contents[i].structFieldName && contents[i].structFieldName != string.Empty)
-						{
-							Console.WriteLine("Manifest Error(content No.{0}): structFieldName \"{1}\" must be empty for bits32 type", i + 1, contents[i].structFieldName);
-							return false;
-						}
 					}
 				}
 			}
 			return true;
 		}
 	}
+#endif
 }

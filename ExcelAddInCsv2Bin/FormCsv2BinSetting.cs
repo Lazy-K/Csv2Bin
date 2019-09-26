@@ -14,40 +14,51 @@ namespace ExcelAddInCsv2Bin
 {
 	public partial class FormCsv2BinSetting : Form
 	{
-		private ManifestHeader _manifestHeader;
-
 		public FormCsv2BinSetting()
 		{
 			InitializeComponent();
 		}
 
+		private string GetBasePath()
+		{
+#if DEBUG
+			return "./";
+#else
+			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
+			return activeWorkbook.Path;
+#endif
+		}
+
 		private string GetManifestFilePath()
 		{
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			return activeSheet.Name + "_csv2bin_manifest.xml";
+			return GetBasePath() + "/" + activeSheet.Name + "_csv2bin_manifest.xml";
 		}
 
-		private string GetCsFilePath()
+		private string GetCsFilePath(string structName)
 		{
+			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			return activeSheet.Name + "_csv2bin_cs.cs";
+			return GetBasePath() + "/" + structName + ".cs";
 		}
 
 		private string GetBinFilePath()
 		{
+			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			return activeSheet.Name + "_csv2bin_bin.bin";
+			return GetBasePath() + "/" + activeSheet.Name + "_csv2bin_bin.bin";
 		}
 
 		private string GetLogFilePath()
 		{
-			return "_csv2bin_log.txt";
+			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
+			return GetBasePath() + "/" + "_csv2bin_log.txt";
 		}
 
-
-		private bool LoadManifestFile(string filePath, ref List<ManifestContent> contents)
+		private bool LoadManifestFile(string filePath, ref ManifestHeader header, ref List<ManifestContent> contents)
 		{
 			var logFilePath = GetLogFilePath();
+			var standardOutput = Console.Out;
 			var result = true;
 			try
 			{
@@ -65,7 +76,7 @@ namespace ExcelAddInCsv2Bin
 				using (var logFile = File.CreateText(logFilePath))
 				{
 					Console.SetOut(logFile);
-					result = Manifest.Read(filePath, ref _manifestHeader, ref contents);
+					result = Manifest.Read(filePath, ref header, ref contents);
 				}
 
 				if (!result)
@@ -82,11 +93,7 @@ namespace ExcelAddInCsv2Bin
 			}
 
 			Finally:
-			{
-				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-				standardOutput.AutoFlush = true;
-				Console.SetOut(standardOutput);
-			}
+			Console.SetOut(standardOutput);
 
 			try
 			{
@@ -102,9 +109,10 @@ namespace ExcelAddInCsv2Bin
 			return result;
 		}
 
-		private bool SaveManifestFile(string filePath, in List<ManifestContent> contents)
+		private bool SaveManifestFile(string filePath, in ManifestHeader header, in List<ManifestContent> contents)
 		{
 			var logFilePath = GetLogFilePath();
+			var standardOutput = Console.Out;
 			var result = true;
 			try
 			{
@@ -116,7 +124,7 @@ namespace ExcelAddInCsv2Bin
 				using (var logFile = File.CreateText(logFilePath))
 				{
 					Console.SetOut(logFile);
-					result = Manifest.Write(filePath, _manifestHeader, contents);
+					result = Manifest.Write(filePath, header, contents);
 				}
 
 				if (!result)
@@ -133,11 +141,7 @@ namespace ExcelAddInCsv2Bin
 			}
 
 			Finally:
-			{
-				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-				standardOutput.AutoFlush = true;
-				Console.SetOut(standardOutput);
-			}
+			Console.SetOut(standardOutput);
 
 			try
 			{
@@ -153,12 +157,16 @@ namespace ExcelAddInCsv2Bin
 			return result;
 		}
 
-		private void SetupDefaultManifest(ref List<ManifestContent> contents)
+		private void SetupDefaultManifest(ref ManifestHeader header, ref List<ManifestContent> contents)
 		{
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			_manifestHeader.version = 1.0f;
-			_manifestHeader.structName = activeSheet.Name;
-
+			header.version = 1.0f;
+			{
+				var s = activeSheet.Name;
+				s = s.Replace(" ", "");
+				s = s.Replace("\t", "");
+				header.structName = s;
+			}
 			contents.Clear();
 		}
 
@@ -276,7 +284,6 @@ namespace ExcelAddInCsv2Bin
 				if (isInvalid)
 				{
 					dgv.Rows[rowIndex].Cells["valueType"].ErrorText = "Error";
-					dgv.Rows[rowIndex].ErrorText = "Error";
 				}
 			}
 			{
@@ -286,7 +293,6 @@ namespace ExcelAddInCsv2Bin
 					if (Csv2Bin.ValueType.bits32 == valueType || Csv2Bin.ValueType.utf16 == valueType)
 					{
 						dgv.Rows[rowIndex].Cells["length"].ErrorText = "Error";
-						dgv.Rows[rowIndex].ErrorText = "Error";
 					}
 				}
 				else
@@ -294,7 +300,7 @@ namespace ExcelAddInCsv2Bin
 					var length = (int)dgv.Rows[rowIndex].Cells["length"].Value;
 					if (isValidValueType && Csv2Bin.ValueType.bits32 == valueType)
 					{
-						if (0 > length/*0はビットフィールド強制スプリットで0は許可*/ || 32 < length)
+						if (0 > length/*0はビットフィールド強制スプリットで0は許可*/ || 15/*BitVector32のSection引数制限*/ < length)
 						{
 							isInvalid = true;
 						}
@@ -317,24 +323,28 @@ namespace ExcelAddInCsv2Bin
 					if (isInvalid)
 					{
 						dgv.Rows[rowIndex].Cells["length"].ErrorText = "Error";
-						dgv.Rows[rowIndex].ErrorText = "Error";
 					}
 				}
 			}
 			{
 				if (isValidValueType && Csv2Bin.ValueType.bits32 != valueType)
 				{
-					if (null != dgv.Rows[rowIndex].Cells["structFieldName"].Value &&
-						(string)dgv.Rows[rowIndex].Cells["structFieldName"].Value != string.Empty)
-					{
-						dgv.Rows[rowIndex].Cells["structFieldName"].ErrorText = "Error";
-						dgv.Rows[rowIndex].ErrorText = "Error";
-					}
 					if (null != dgv.Rows[rowIndex].Cells["structBitsName"].Value &&
 						(string)dgv.Rows[rowIndex].Cells["structBitsName"].Value != string.Empty)
 					{
 						dgv.Rows[rowIndex].Cells["structBitsName"].ErrorText = "Error";
-						dgv.Rows[rowIndex].ErrorText = "Error";
+					}
+				}
+			}
+
+			{
+				var columnCount = dgv.ColumnCount;
+				for (var i = 0; i < columnCount; ++i)
+				{
+					if (string.Empty != dgv.Rows[rowIndex].Cells[i].ErrorText)
+					{
+						dgv.Rows[rowIndex].ErrorText = Resource.SR_DATA_GRID_VIEW_MANIFEST_ERROR_TEXT_ROW;
+						break;
 					}
 				}
 			}
@@ -353,13 +363,18 @@ namespace ExcelAddInCsv2Bin
 			OnManifestValidateStateChanged();
 		}
 
+		private void DataGridViewManifest_CellClick(object sender, DataGridViewCellEventArgs e)
+		{
+			((DataGridView)sender).BeginEdit(true); // 1回のクリックでエディットモードにする
+		}
 
 		private void FormCsv2BinSetting_Load(object sender, EventArgs e)
 		{
+			var header = new ManifestHeader();
 			var contents = new List<ManifestContent>();
-			if (!LoadManifestFile(GetManifestFilePath(), ref contents))
+			if (!LoadManifestFile(GetManifestFilePath(), ref header, ref contents))
 			{
-				SetupDefaultManifest(ref contents);
+				SetupDefaultManifest(ref header, ref contents);
 			}
 
 			ref var dgv = ref DataGridViewManifest;
@@ -409,11 +424,13 @@ namespace ExcelAddInCsv2Bin
 				}
 			}
 
-			RefreshManifestView(contents);
+			RefreshManifestView(header, contents);
 		}
 
-		private void RefreshManifestView(in List<ManifestContent> contents)
+		private void RefreshManifestView(in ManifestHeader header, in List<ManifestContent> contents)
 		{
+			TextBoxStructName.Text = header.structName;
+
 			ref var dgv = ref DataGridViewManifest;
 			dgv.Rows.Clear();
 			var contentCount = contents.Count;
@@ -428,8 +445,11 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void GetManifestContentsFromView(ref List<ManifestContent> contents)
+		private void GetManifestContentsFromView(ref ManifestHeader header, ref List<ManifestContent> contents)
 		{
+			header.version = 1.0f;
+			header.structName = TextBoxStructName.Text;
+
 			contents.Clear();
 			ref var dgv = ref DataGridViewManifest;
 			var rowCount = dgv.RowCount - 1;
@@ -465,24 +485,30 @@ namespace ExcelAddInCsv2Bin
 
 		private void ButtonSaveManifest_Click(object sender, EventArgs e)
 		{
+			var filePath = GetManifestFilePath();
+			var header = new ManifestHeader();
 			var contents = new List<ManifestContent>();
-			GetManifestContentsFromView(ref contents);
-			if (SaveManifestFile(GetManifestFilePath(), contents))
+			GetManifestContentsFromView(ref header, ref contents);
+			if (!SaveManifestFile(filePath, header, contents))
 			{
-				MessageBox.Show("Succeed", "Save Manifest File", MessageBoxButtons.OK);
+				MessageBox.Show(string.Format("\"{0}\"\nFailed", Path.GetFullPath(filePath)), "Save Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
 			}
+			MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Save Manifest File", MessageBoxButtons.OK);
 		}
 
 		private void ButtonManifestLoad_Click(object sender, EventArgs e)
 		{
+			var filePath = GetManifestFilePath();
+			var header = new ManifestHeader();
 			var contents = new List<ManifestContent>();
-			if (!LoadManifestFile(GetManifestFilePath(), ref contents))
+			if (!LoadManifestFile(filePath, ref header, ref contents))
 			{
-				MessageBox.Show("Failed", "Load Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(string.Format("\"{0}\"\nFailed", Path.GetFullPath(filePath)), "Load Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
-			MessageBox.Show("Succeed", "Load Manifest File", MessageBoxButtons.OK);
-			RefreshManifestView(contents);
+			RefreshManifestView(header, contents);
+			MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Load Manifest File", MessageBoxButtons.OK);
 		}
 
 		private void ButtonManifestDelete_Click(object sender, EventArgs e)
@@ -572,17 +598,18 @@ namespace ExcelAddInCsv2Bin
 		{
 			try
 			{
+				var header = new ManifestHeader();
 				var contents = new List<ManifestContent>();
-				GetManifestContentsFromView(ref contents);
-				var code = Csv2Bin.Manifest.GenerateCode(_manifestHeader, contents);
+				GetManifestContentsFromView(ref header, ref contents);
+				var code = Csv2Bin.Manifest.GenerateCode(header, contents);
 
-				var filePath = GetCsFilePath();
+				var filePath = GetCsFilePath(header.structName);
 				if (File.Exists(filePath))
 				{
 					File.Delete(filePath);
 				}
 				File.WriteAllText(filePath, code);
-				MessageBox.Show(string.Format("\"{0}\"\nSucceed", filePath), "Export Cs", MessageBoxButtons.OK);
+				MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Export Cs", MessageBoxButtons.OK);
 			}
 			catch (Exception exception)
 			{
@@ -593,10 +620,12 @@ namespace ExcelAddInCsv2Bin
 		private void ButtonBinExport_Click(object sender, EventArgs e)
 		{
 			var logFilePath = GetLogFilePath();
+			var standardOutput = Console.Out;
 			try
 			{
+				var header = new ManifestHeader();
 				var contents = new List<ManifestContent>();
-				GetManifestContentsFromView(ref contents);
+				GetManifestContentsFromView(ref header, ref contents);
 				UInt32 numRecords;
 				var binary = new List<byte>();
 
@@ -619,7 +648,7 @@ namespace ExcelAddInCsv2Bin
 					goto Finally;
 				}
 
-				var filePath = GetCsFilePath();
+				var filePath = GetBinFilePath();
 				using (var writer = new BinaryWriter(new FileStream(filePath, FileMode.Create)))
 				{
 					writer.Write(binary.ToArray());
@@ -630,7 +659,7 @@ namespace ExcelAddInCsv2Bin
 						writer.Write(numRecords);
 					}
 				}
-				MessageBox.Show(string.Format("\"{0}\"\nSucceed", filePath), "Export Bin", MessageBoxButtons.OK);
+				MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Export Bin", MessageBoxButtons.OK);
 			}
 			catch (Exception exception)
 			{
@@ -639,11 +668,7 @@ namespace ExcelAddInCsv2Bin
 			}
 
 			Finally:
-			{
-				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-				standardOutput.AutoFlush = true;
-				Console.SetOut(standardOutput);
-			}
+			Console.SetOut(standardOutput);
 
 			try
 			{
@@ -654,6 +679,16 @@ namespace ExcelAddInCsv2Bin
 			}
 			catch (Exception)
 			{
+			}
+		}
+
+		private void TextBoxStructName_Validating(object sender, CancelEventArgs e)
+		{
+			var tb = (TextBox)sender;
+			if (string.Empty == tb.Text || tb.Text.Contains(" ") || tb.Text.Contains("\t"))
+			{
+				MessageBox.Show("Invalid format", "StructName", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				e.Cancel = true;
 			}
 		}
 	}

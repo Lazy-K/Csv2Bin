@@ -32,6 +32,9 @@
 			this.ButtonManifestSave = new System.Windows.Forms.Button();
 			this.ButtonManifestLoad = new System.Windows.Forms.Button();
 			this.ButtonManifestDelete = new System.Windows.Forms.Button();
+			this.ButtonRowDelete = new System.Windows.Forms.Button();
+			this.ButtonRowMoveUp = new System.Windows.Forms.Button();
+			this.ButtonRowMoveDown = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.DataGridViewManifest)).BeginInit();
 			this.SuspendLayout();
 			//
@@ -48,39 +51,72 @@
 			//
 			// ButtonManifestSave
 			//
-			this.ButtonManifestSave.Location = new System.Drawing.Point(147, 393);
+			this.ButtonManifestSave.Location = new System.Drawing.Point(128, 393);
 			this.ButtonManifestSave.Name = "ButtonManifestSave";
-			this.ButtonManifestSave.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestSave.Size = new System.Drawing.Size(94, 23);
 			this.ButtonManifestSave.TabIndex = 1;
-			this.ButtonManifestSave.Text = "Save";
+			this.ButtonManifestSave.Text = "SaveManifest";
 			this.ButtonManifestSave.UseVisualStyleBackColor = true;
 			this.ButtonManifestSave.Click += new System.EventHandler(this.ButtonSaveManifest_Click);
 			//
 			// ButtonManifestLoad
 			//
-			this.ButtonManifestLoad.Location = new System.Drawing.Point(315, 393);
+			this.ButtonManifestLoad.Location = new System.Drawing.Point(295, 393);
 			this.ButtonManifestLoad.Name = "ButtonManifestLoad";
-			this.ButtonManifestLoad.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestLoad.Size = new System.Drawing.Size(99, 23);
 			this.ButtonManifestLoad.TabIndex = 2;
-			this.ButtonManifestLoad.Text = "Load";
+			this.ButtonManifestLoad.Text = "LoadManifest";
 			this.ButtonManifestLoad.UseVisualStyleBackColor = true;
 			this.ButtonManifestLoad.Click += new System.EventHandler(this.ButtonManifestLoad_Click);
 			//
 			// ButtonManifestDelete
 			//
-			this.ButtonManifestDelete.Location = new System.Drawing.Point(457, 393);
+			this.ButtonManifestDelete.Location = new System.Drawing.Point(443, 393);
 			this.ButtonManifestDelete.Name = "ButtonManifestDelete";
-			this.ButtonManifestDelete.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestDelete.Size = new System.Drawing.Size(98, 23);
 			this.ButtonManifestDelete.TabIndex = 3;
-			this.ButtonManifestDelete.Text = "Delete";
+			this.ButtonManifestDelete.Text = "DeleteManifest";
 			this.ButtonManifestDelete.UseVisualStyleBackColor = true;
 			this.ButtonManifestDelete.Click += new System.EventHandler(this.ButtonManifestDelete_Click);
+			//
+			// ButtonRowDelete
+			//
+			this.ButtonRowDelete.Location = new System.Drawing.Point(663, 89);
+			this.ButtonRowDelete.Name = "ButtonRowDelete";
+			this.ButtonRowDelete.Size = new System.Drawing.Size(95, 23);
+			this.ButtonRowDelete.TabIndex = 4;
+			this.ButtonRowDelete.Text = "RowDelete";
+			this.ButtonRowDelete.UseVisualStyleBackColor = true;
+			this.ButtonRowDelete.Click += new System.EventHandler(this.ButtonRowDelete_Click);
+			//
+			// ButtonRowMoveUp
+			//
+			this.ButtonRowMoveUp.Location = new System.Drawing.Point(663, 157);
+			this.ButtonRowMoveUp.Name = "ButtonRowMoveUp";
+			this.ButtonRowMoveUp.Size = new System.Drawing.Size(95, 23);
+			this.ButtonRowMoveUp.TabIndex = 5;
+			this.ButtonRowMoveUp.Text = "RowMoveUp";
+			this.ButtonRowMoveUp.UseVisualStyleBackColor = true;
+			this.ButtonRowMoveUp.Click += new System.EventHandler(this.ButtonRowMoveUp_Click);
+			//
+			// ButtonRowMoveDown
+			//
+			this.ButtonRowMoveDown.Location = new System.Drawing.Point(663, 223);
+			this.ButtonRowMoveDown.Name = "ButtonRowMoveDown";
+			this.ButtonRowMoveDown.Size = new System.Drawing.Size(95, 23);
+			this.ButtonRowMoveDown.TabIndex = 6;
+			this.ButtonRowMoveDown.Text = "RowMoveDown";
+			this.ButtonRowMoveDown.UseVisualStyleBackColor = true;
+			this.ButtonRowMoveDown.Click += new System.EventHandler(this.ButtonRowMoveDown_Click);
 			//
 			// FormCsv2BinSetting
 			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.Controls.Add(this.ButtonRowMoveDown);
+			this.Controls.Add(this.ButtonRowMoveUp);
+			this.Controls.Add(this.ButtonRowDelete);
 			this.Controls.Add(this.ButtonManifestDelete);
 			this.Controls.Add(this.ButtonManifestLoad);
 			this.Controls.Add(this.ButtonManifestSave);
@@ -99,5 +135,8 @@
 		private System.Windows.Forms.Button ButtonManifestSave;
 		private System.Windows.Forms.Button ButtonManifestLoad;
 		private System.Windows.Forms.Button ButtonManifestDelete;
+		private System.Windows.Forms.Button ButtonRowDelete;
+		private System.Windows.Forms.Button ButtonRowMoveUp;
+		private System.Windows.Forms.Button ButtonRowMoveDown;
 	}
 }

@@ -15,7 +15,6 @@ namespace ExcelAddInCsv2Bin
 	public partial class FormCsv2BinSetting : Form
 	{
 		private ManifestHeader _manifestHeader;
-		//private List<ManifestContent> _manifestContents = new List<ManifestContent>();
 
 		public FormCsv2BinSetting()
 		{
@@ -205,8 +204,8 @@ namespace ExcelAddInCsv2Bin
 		private bool IsValidInputManifestDataGridView()
 		{
 			var dgv = (DataGridView)DataGridViewManifest;
-			var rowsCount = dgv.Rows.Count;
-			for (var i = 0; i < rowsCount; ++i)
+			var rowCount = dgv.RowCount;
+			for (var i = 0; i < rowCount; ++i)
 			{
 				if (string.Empty != dgv.Rows[i].ErrorText) return false;
 			}
@@ -224,7 +223,7 @@ namespace ExcelAddInCsv2Bin
 			dgv.Rows[rowIndex].Cells["structFieldName"].ErrorText = string.Empty;
 			dgv.Rows[rowIndex].Cells["structBitsName"].ErrorText = string.Empty;
 
-			if (dgv.AllowUserToAddRows && dgv.Rows.Count - 1 <= rowIndex)
+			if (dgv.Rows.Count - 1 <= rowIndex)
 			{
 				return;
 			}
@@ -403,8 +402,8 @@ namespace ExcelAddInCsv2Bin
 		{
 			contents.Clear();
 			ref var dgv = ref DataGridViewManifest;
-			var rowsCount = dgv.AllowUserToAddRows ? dgv.Rows.Count - 1 : dgv.Rows.Count;
-			for (var i = 0; i < rowsCount; ++i)
+			var rowCount = dgv.RowCount - 1;
+			for (var i = 0; i < rowCount; ++i)
 			{
 				var content = new ManifestContent();
 				{
@@ -476,55 +475,67 @@ namespace ExcelAddInCsv2Bin
 			return;
 		}
 
-#if false
-
-		private void buttonDelete_Click(object sender, EventArgs e)
+		private void ButtonRowDelete_Click(object sender, EventArgs e)
 		{
-#if false
-			var rows = dataGridView1.SelectedRows;
-			var count = rows.Count;
-			for (var i = 0; i < count; ++i)
-			{
-				dataGridView1.Rows.Remove(rows[i]);
-			}
-#elif true
-			if (dataGridView1.CurrentRow.IsNewRow) return;
-			dataGridView1.Rows.Remove(dataGridView1.CurrentRow);
-#endif
+			ref var dgv = ref DataGridViewManifest;
+			if (dgv.CurrentRow.IsNewRow) return;
+			dgv.Rows.Remove(dgv.CurrentRow);
+
+			ButtonManifestSave.Enabled = IsValidInputManifestDataGridView();
 		}
 
-		private void buttonUp_Click(object sender, EventArgs e)
+		private void ButtonRowMoveUp_Click(object sender, EventArgs e)
 		{
-			if (dataGridView1.CurrentRow.IsNewRow) return;
-			var index = dataGridView1.CurrentRow.Index;
+			ref var dgv = ref DataGridViewManifest;
+			if (dgv.CurrentRow.IsNewRow) return;
+
+			var index = dgv.CurrentRow.Index;
 			if (0 >= index) return;
 
-			var columnCount = dataGridView1.ColumnCount;
+			var columnCount = dgv.ColumnCount;
 			var o1 = new object[columnCount];
 			var o2 = new object[columnCount];
 			for (var i = 0; i < columnCount; ++i)
 			{
-				o1[i] = dataGridView1.Rows[index].Cells[i].Value;
-				o2[i] = dataGridView1.Rows[index - 1].Cells[i].Value;
+				o1[i] = dgv.Rows[index].Cells[i].Value;
+				o2[i] = dgv.Rows[index - 1].Cells[i].Value;
 			}
 
-			dataGridView1.Rows.RemoveAt(index);
-			dataGridView1.Rows.RemoveAt(index - 1);
+			dgv.Rows.RemoveAt(index);
+			dgv.Rows.RemoveAt(index - 1);
 
-			dataGridView1.Rows.Insert(index - 1, o2);
-			dataGridView1.Rows.Insert(index - 1, o1);
+			dgv.Rows.Insert(index - 1, o2);
+			dgv.Rows.Insert(index - 1, o1);
 
-			dataGridView1.CurrentCell = dataGridView1.Rows[index - 1].Cells[0];
+			dgv.CurrentCell = dgv.Rows[index - 1].Cells[0];
 		}
 
-		private void buttonDown_Click(object sender, EventArgs e)
+		private void ButtonRowMoveDown_Click(object sender, EventArgs e)
 		{
-			if (dataGridView1.CurrentRow.IsNewRow) return;
-			var rowCount = dataGridView1.Rows.Count;
-			if (rowCount - 1 <= dataGridView1.CurrentRow.Index) return;
-			var index = dataGridView1.CurrentRow.Index;
-			dataGridView1.Rows.InsertCopies(index, index + 1, 1);
+			ref var dgv = ref DataGridViewManifest;
+			if (dgv.CurrentRow.IsNewRow) return;
+
+			var rowCount = dgv.Rows.Count;
+			var index = dgv.CurrentRow.Index;
+			if (rowCount - 2 <= index) return;
+
+
+			var columnCount = dgv.ColumnCount;
+			var o1 = new object[columnCount];
+			var o2 = new object[columnCount];
+			for (var i = 0; i < columnCount; ++i)
+			{
+				o1[i] = dgv.Rows[index].Cells[i].Value;
+				o2[i] = dgv.Rows[index + 1].Cells[i].Value;
+			}
+
+			dgv.Rows.RemoveAt(index);
+			dgv.Rows.RemoveAt(index);
+
+			dgv.Rows.Insert(index, o1);
+			dgv.Rows.Insert(index, o2);
+
+			dgv.CurrentCell = dgv.Rows[index + 1].Cells[0];
 		}
-#endif
 	}
 }

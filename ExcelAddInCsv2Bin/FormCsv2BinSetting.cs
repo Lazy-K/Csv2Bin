@@ -140,7 +140,7 @@ namespace ExcelAddInCsv2Bin
 			contents.Clear();
 		}
 
-		private void manifestDataGridView_DataError(object sender, DataGridViewDataErrorEventArgs anError)
+		private void DataGridViewManifest_DataError(object sender, DataGridViewDataErrorEventArgs anError)
 		{
 			//MessageBox.Show("Error happened " + anError.Context.ToString());
 
@@ -204,7 +204,7 @@ namespace ExcelAddInCsv2Bin
 
 		private bool IsValidInputManifestDataGridView()
 		{
-			var dgv = (DataGridView)manifestDataGridView;
+			var dgv = (DataGridView)DataGridViewManifest;
 			var rowsCount = dgv.Rows.Count;
 			for (var i = 0; i < rowsCount; ++i)
 			{
@@ -215,7 +215,7 @@ namespace ExcelAddInCsv2Bin
 
 		private void RefreshManifestDataGridViewErrorText(int rowIndex)
 		{
-			var dgv = (DataGridView)manifestDataGridView;
+			var dgv = (DataGridView)DataGridViewManifest;
 
 			dgv.Rows[rowIndex].ErrorText = string.Empty;
 			dgv.Rows[rowIndex].Cells["valueName"].ErrorText = string.Empty;
@@ -316,10 +316,10 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void manifestDataGridView_CellValidated(object sender, DataGridViewCellEventArgs e)
+		private void DataGridViewManifest_CellValidated(object sender, DataGridViewCellEventArgs e)
 		{
 			RefreshManifestDataGridViewErrorText(e.RowIndex);
-			saveManifestButton.Enabled = IsValidInputManifestDataGridView();
+			ButtonManifestSave.Enabled = IsValidInputManifestDataGridView();
 		}
 
 
@@ -332,7 +332,7 @@ namespace ExcelAddInCsv2Bin
 			}
 
 			//var dt = new DataTable();
-			ref var dgv = ref manifestDataGridView;
+			ref var dgv = ref DataGridViewManifest;
 			{
 				{
 					var column = new DataGridViewColumn();
@@ -385,7 +385,7 @@ namespace ExcelAddInCsv2Bin
 
 		private void RefreshManifestView(in List<ManifestContent> contents)
 		{
-			ref var dgv = ref manifestDataGridView;
+			ref var dgv = ref DataGridViewManifest;
 			dgv.Rows.Clear();
 			var contentCount = contents.Count;
 			for (var i = 0; i < contentCount; ++i)
@@ -402,7 +402,7 @@ namespace ExcelAddInCsv2Bin
 		private void GetManifestContentsFromView(ref List<ManifestContent> contents)
 		{
 			contents.Clear();
-			ref var dgv = ref manifestDataGridView;
+			ref var dgv = ref DataGridViewManifest;
 			var rowsCount = dgv.AllowUserToAddRows ? dgv.Rows.Count - 1 : dgv.Rows.Count;
 			for (var i = 0; i < rowsCount; ++i)
 			{
@@ -434,7 +434,7 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void saveManifestButton_Click(object sender, EventArgs e)
+		private void ButtonSaveManifest_Click(object sender, EventArgs e)
 		{
 			var contents = new List<ManifestContent>();
 			GetManifestContentsFromView(ref contents);
@@ -444,7 +444,7 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void manifestLoadButton_Click(object sender, EventArgs e)
+		private void ButtonManifestLoad_Click(object sender, EventArgs e)
 		{
 			var contents = new List<ManifestContent>();
 			if (!LoadManifestFile(GetManifestFilePath(), ref contents))
@@ -456,7 +456,7 @@ namespace ExcelAddInCsv2Bin
 			RefreshManifestView(contents);
 		}
 
-		private void manifestDeleteButton_Click(object sender, EventArgs e)
+		private void ButtonManifestDelete_Click(object sender, EventArgs e)
 		{
 			try
 			{

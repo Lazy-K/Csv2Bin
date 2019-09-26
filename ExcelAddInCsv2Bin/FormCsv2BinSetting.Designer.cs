@@ -28,76 +28,76 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.manifestDataGridView = new System.Windows.Forms.DataGridView();
-			this.saveManifestButton = new System.Windows.Forms.Button();
-			this.manifestLoadButton = new System.Windows.Forms.Button();
-			this.manifestDeleteButton = new System.Windows.Forms.Button();
-			((System.ComponentModel.ISupportInitialize)(this.manifestDataGridView)).BeginInit();
+			this.DataGridViewManifest = new System.Windows.Forms.DataGridView();
+			this.ButtonManifestSave = new System.Windows.Forms.Button();
+			this.ButtonManifestLoad = new System.Windows.Forms.Button();
+			this.ButtonManifestDelete = new System.Windows.Forms.Button();
+			((System.ComponentModel.ISupportInitialize)(this.DataGridViewManifest)).BeginInit();
 			this.SuspendLayout();
 			//
-			// manifestDataGridView
+			// DataGridViewManifest
 			//
-			this.manifestDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.manifestDataGridView.Location = new System.Drawing.Point(41, 40);
-			this.manifestDataGridView.Name = "manifestDataGridView";
-			this.manifestDataGridView.RowTemplate.Height = 21;
-			this.manifestDataGridView.Size = new System.Drawing.Size(565, 297);
-			this.manifestDataGridView.TabIndex = 0;
-			this.manifestDataGridView.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.manifestDataGridView_CellValidated);
-			this.manifestDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.manifestDataGridView_DataError);
+			this.DataGridViewManifest.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.DataGridViewManifest.Location = new System.Drawing.Point(41, 40);
+			this.DataGridViewManifest.Name = "DataGridViewManifest";
+			this.DataGridViewManifest.RowTemplate.Height = 21;
+			this.DataGridViewManifest.Size = new System.Drawing.Size(565, 297);
+			this.DataGridViewManifest.TabIndex = 0;
+			this.DataGridViewManifest.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewManifest_CellValidated);
+			this.DataGridViewManifest.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.DataGridViewManifest_DataError);
 			//
-			// saveManifestButton
+			// ButtonManifestSave
 			//
-			this.saveManifestButton.Location = new System.Drawing.Point(147, 393);
-			this.saveManifestButton.Name = "saveManifestButton";
-			this.saveManifestButton.Size = new System.Drawing.Size(75, 23);
-			this.saveManifestButton.TabIndex = 1;
-			this.saveManifestButton.Text = "Save";
-			this.saveManifestButton.UseVisualStyleBackColor = true;
-			this.saveManifestButton.Click += new System.EventHandler(this.saveManifestButton_Click);
+			this.ButtonManifestSave.Location = new System.Drawing.Point(147, 393);
+			this.ButtonManifestSave.Name = "ButtonManifestSave";
+			this.ButtonManifestSave.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestSave.TabIndex = 1;
+			this.ButtonManifestSave.Text = "Save";
+			this.ButtonManifestSave.UseVisualStyleBackColor = true;
+			this.ButtonManifestSave.Click += new System.EventHandler(this.ButtonSaveManifest_Click);
 			//
-			// manifestLoadButton
+			// ButtonManifestLoad
 			//
-			this.manifestLoadButton.Location = new System.Drawing.Point(315, 393);
-			this.manifestLoadButton.Name = "manifestLoadButton";
-			this.manifestLoadButton.Size = new System.Drawing.Size(75, 23);
-			this.manifestLoadButton.TabIndex = 2;
-			this.manifestLoadButton.Text = "Load";
-			this.manifestLoadButton.UseVisualStyleBackColor = true;
-			this.manifestLoadButton.Click += new System.EventHandler(this.manifestLoadButton_Click);
+			this.ButtonManifestLoad.Location = new System.Drawing.Point(315, 393);
+			this.ButtonManifestLoad.Name = "ButtonManifestLoad";
+			this.ButtonManifestLoad.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestLoad.TabIndex = 2;
+			this.ButtonManifestLoad.Text = "Load";
+			this.ButtonManifestLoad.UseVisualStyleBackColor = true;
+			this.ButtonManifestLoad.Click += new System.EventHandler(this.ButtonManifestLoad_Click);
 			//
-			// manifestDeleteButton
+			// ButtonManifestDelete
 			//
-			this.manifestDeleteButton.Location = new System.Drawing.Point(457, 393);
-			this.manifestDeleteButton.Name = "manifestDeleteButton";
-			this.manifestDeleteButton.Size = new System.Drawing.Size(75, 23);
-			this.manifestDeleteButton.TabIndex = 3;
-			this.manifestDeleteButton.Text = "Delete";
-			this.manifestDeleteButton.UseVisualStyleBackColor = true;
-			this.manifestDeleteButton.Click += new System.EventHandler(this.manifestDeleteButton_Click);
+			this.ButtonManifestDelete.Location = new System.Drawing.Point(457, 393);
+			this.ButtonManifestDelete.Name = "ButtonManifestDelete";
+			this.ButtonManifestDelete.Size = new System.Drawing.Size(75, 23);
+			this.ButtonManifestDelete.TabIndex = 3;
+			this.ButtonManifestDelete.Text = "Delete";
+			this.ButtonManifestDelete.UseVisualStyleBackColor = true;
+			this.ButtonManifestDelete.Click += new System.EventHandler(this.ButtonManifestDelete_Click);
 			//
 			// FormCsv2BinSetting
 			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
-			this.Controls.Add(this.manifestDeleteButton);
-			this.Controls.Add(this.manifestLoadButton);
-			this.Controls.Add(this.saveManifestButton);
-			this.Controls.Add(this.manifestDataGridView);
+			this.Controls.Add(this.ButtonManifestDelete);
+			this.Controls.Add(this.ButtonManifestLoad);
+			this.Controls.Add(this.ButtonManifestSave);
+			this.Controls.Add(this.DataGridViewManifest);
 			this.Name = "FormCsv2BinSetting";
 			this.Text = "FormCsv2BinSetting";
 			this.Load += new System.EventHandler(this.FormCsv2BinSetting_Load);
-			((System.ComponentModel.ISupportInitialize)(this.manifestDataGridView)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.DataGridViewManifest)).EndInit();
 			this.ResumeLayout(false);
 
 		}
 
 		#endregion
 
-		private System.Windows.Forms.DataGridView manifestDataGridView;
-		private System.Windows.Forms.Button saveManifestButton;
-		private System.Windows.Forms.Button manifestLoadButton;
-		private System.Windows.Forms.Button manifestDeleteButton;
+		private System.Windows.Forms.DataGridView DataGridViewManifest;
+		private System.Windows.Forms.Button ButtonManifestSave;
+		private System.Windows.Forms.Button ButtonManifestLoad;
+		private System.Windows.Forms.Button ButtonManifestDelete;
 	}
 }

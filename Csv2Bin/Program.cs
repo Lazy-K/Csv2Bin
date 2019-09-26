@@ -54,14 +54,14 @@ namespace Csv2Bin
 
 			if (null != _commandLineOption.tableFilePath && null != _commandLineOption.outputBinaryFilePath)
 			{
-				var binary = new List<byte>();
-				UInt32 numRecords = 0;
+				List<byte> binary;
+				UInt32 numRecords;
 				{ // Read table file and convert binary by manifest
 					if (!Manifest.GenerateBinary(
 						_commandLineOption.tableFilePath,
 						manifestContents,
-						ref binary,
-						ref numRecords))
+						out binary,
+						out numRecords))
 					{
 						goto Failed;
 					}
@@ -95,8 +95,8 @@ namespace Csv2Bin
 				try
 				{
 					var code = Manifest.GenerateCode(
-						ref manifestHeader,
-						ref manifestContents);
+						manifestHeader,
+						manifestContents);
 					File.WriteAllText(_commandLineOption.outputCsFilePath, code);
 				}
 				catch (Exception e)

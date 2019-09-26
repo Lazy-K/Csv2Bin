@@ -17,8 +17,8 @@ namespace Csv2Bin
 		};
 
 		static public string GenerateCode(
-			ref ManifestHeader header,
-			ref List<ManifestContent> contents)
+			in ManifestHeader header,
+			in List<ManifestContent> contents)
 		{
 			var contentsCount = contents.Count;
 			var isExitsString = false;

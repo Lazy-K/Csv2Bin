@@ -21,14 +21,40 @@ namespace ExcelAddInCsv2Bin
 			InitializeComponent();
 		}
 
+		private string GetManifestFilePath()
+		{
+			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
+			return activeSheet.Name + "_csv2bin_manifest.xml";
+		}
+
+		private string GetCsFilePath()
+		{
+			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
+			return activeSheet.Name + "_csv2bin_cs.cs";
+		}
+
+		private string GetBinFilePath()
+		{
+			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
+			return activeSheet.Name + "_csv2bin_bin.bin";
+		}
+
+		private string GetLogFilePath()
+		{
+			return "_csv2bin_log.txt";
+		}
+
+
 		private bool LoadManifestFile(string filePath, ref List<ManifestContent> contents)
 		{
-			var logFilePath = "_csv2bin_log.txt";
+			var logFilePath = GetLogFilePath();
+			var result = true;
 			try
 			{
 				if (!File.Exists(filePath))
 				{
-					return false;
+					result = false;
+					goto Finally;
 				}
 
 				if (File.Exists(logFilePath))
@@ -36,48 +62,50 @@ namespace ExcelAddInCsv2Bin
 					File.Delete(logFilePath);
 				}
 
-				var logFile = File.CreateText(logFilePath);
-				Console.SetOut(logFile);
-
-				var result = Manifest.Read(filePath, ref _manifestHeader, ref contents);
-
-				logFile.Dispose();
-				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-				standardOutput.AutoFlush = true;
-				Console.SetOut(standardOutput);
+				using (var logFile = File.CreateText(logFilePath))
+				{
+					Console.SetOut(logFile);
+					result = Manifest.Read(filePath, ref _manifestHeader, ref contents);
+				}
 
 				if (!result)
 				{
 					MessageBox.Show(File.ReadAllText(logFilePath), "Load Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					goto Failed;
+					goto Finally;
 				}
 			}
 			catch (Exception exception)
 			{
 				MessageBox.Show(exception.ToString(), "Load Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				goto Failed;
+				result = false;
+				goto Finally;
 			}
-			finally
+
+			Finally:
 			{
-				try
+				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+				standardOutput.AutoFlush = true;
+				Console.SetOut(standardOutput);
+			}
+
+			try
+			{
+				if (File.Exists(logFilePath))
 				{
-					if (File.Exists(logFilePath))
-					{
-						File.Delete(logFilePath);
-					}
-				}
-				catch (Exception)
-				{
+					File.Delete(logFilePath);
 				}
 			}
-			return true;
-			Failed:
-			return false;
+			catch (Exception)
+			{
+			}
+
+			return result;
 		}
 
 		private bool SaveManifestFile(string filePath, in List<ManifestContent> contents)
 		{
-			var logFilePath = "_csv2bin_log.txt";
+			var logFilePath = GetLogFilePath();
+			var result = true;
 			try
 			{
 				if (File.Exists(logFilePath))
@@ -85,49 +113,44 @@ namespace ExcelAddInCsv2Bin
 					File.Delete(logFilePath);
 				}
 
-				var logFile = File.CreateText(logFilePath);
-				Console.SetOut(logFile);
-
-				var result = Manifest.Write(filePath, _manifestHeader, contents);
-
-				logFile.Dispose();
-				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-				standardOutput.AutoFlush = true;
-				Console.SetOut(standardOutput);
+				using (var logFile = File.CreateText(logFilePath))
+				{
+					Console.SetOut(logFile);
+					result = Manifest.Write(filePath, _manifestHeader, contents);
+				}
 
 				if (!result)
 				{
 					MessageBox.Show(File.ReadAllText(logFilePath), "Save Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					goto Failed;
+					goto Finally;
 				}
 			}
 			catch (Exception exception)
 			{
 				MessageBox.Show(exception.ToString(), "Save Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				goto Failed;
+				result = false;
+				goto Finally;
 			}
-			finally
-			{
-				try
-				{
-					if (File.Exists(logFilePath))
-					{
-						File.Delete(logFilePath);
-					}
-				}
-				catch (Exception)
-				{
-				}
-			}
-			return true;
-			Failed:
-			return false;
-		}
 
-		private string GetManifestFilePath()
-		{
-			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			return activeSheet.Name + "_csv2bin_manifest.xml";
+			Finally:
+			{
+				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+				standardOutput.AutoFlush = true;
+				Console.SetOut(standardOutput);
+			}
+
+			try
+			{
+				if (File.Exists(logFilePath))
+				{
+					File.Delete(logFilePath);
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			return result;
 		}
 
 		private void SetupDefaultManifest(ref List<ManifestContent> contents)
@@ -141,6 +164,7 @@ namespace ExcelAddInCsv2Bin
 
 		private void DataGridViewManifest_DataError(object sender, DataGridViewDataErrorEventArgs anError)
 		{
+#if false
 			//MessageBox.Show("Error happened " + anError.Context.ToString());
 
 			if (anError.Context.HasFlag(DataGridViewDataErrorContexts.Commit))
@@ -175,6 +199,7 @@ namespace ExcelAddInCsv2Bin
 				//dgv.Rows[anError.RowIndex].ErrorText = "format error1";
 				//dgv.Rows[anError.RowIndex].Cells[anError.ColumnIndex].ErrorText = "Error";
 			}
+#endif
 		}
 
 		private bool Int32ToValueTypeString(Int32 valueType, out string dest)
@@ -315,10 +340,17 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
+		private void OnManifestValidateStateChanged()
+		{
+			ButtonManifestSave.Enabled =
+			ButtonBinExport.Enabled =
+			ButtonCsExport.Enabled = IsValidInputManifestDataGridView();
+		}
+
 		private void DataGridViewManifest_CellValidated(object sender, DataGridViewCellEventArgs e)
 		{
 			RefreshManifestDataGridViewErrorText(e.RowIndex);
-			ButtonManifestSave.Enabled = IsValidInputManifestDataGridView();
+			OnManifestValidateStateChanged();
 		}
 
 
@@ -330,7 +362,6 @@ namespace ExcelAddInCsv2Bin
 				SetupDefaultManifest(ref contents);
 			}
 
-			//var dt = new DataTable();
 			ref var dgv = ref DataGridViewManifest;
 			{
 				{
@@ -377,7 +408,6 @@ namespace ExcelAddInCsv2Bin
 					dgv.Columns.Add(column);
 				}
 			}
-			//manifestDataGridView.DataSource = dt;
 
 			RefreshManifestView(contents);
 		}
@@ -481,7 +511,7 @@ namespace ExcelAddInCsv2Bin
 			if (dgv.CurrentRow.IsNewRow) return;
 			dgv.Rows.Remove(dgv.CurrentRow);
 
-			ButtonManifestSave.Enabled = IsValidInputManifestDataGridView();
+			OnManifestValidateStateChanged();
 		}
 
 		private void ButtonRowMoveUp_Click(object sender, EventArgs e)
@@ -536,6 +566,95 @@ namespace ExcelAddInCsv2Bin
 			dgv.Rows.Insert(index, o2);
 
 			dgv.CurrentCell = dgv.Rows[index + 1].Cells[0];
+		}
+
+		private void ButtonCsExport_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				var contents = new List<ManifestContent>();
+				GetManifestContentsFromView(ref contents);
+				var code = Csv2Bin.Manifest.GenerateCode(_manifestHeader, contents);
+
+				var filePath = GetCsFilePath();
+				if (File.Exists(filePath))
+				{
+					File.Delete(filePath);
+				}
+				File.WriteAllText(filePath, code);
+				MessageBox.Show(string.Format("\"{0}\"\nSucceed", filePath), "Export Cs", MessageBoxButtons.OK);
+			}
+			catch (Exception exception)
+			{
+				MessageBox.Show(exception.ToString(), "Export Cs", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void ButtonBinExport_Click(object sender, EventArgs e)
+		{
+			var logFilePath = GetLogFilePath();
+			try
+			{
+				var contents = new List<ManifestContent>();
+				GetManifestContentsFromView(ref contents);
+				UInt32 numRecords;
+				var binary = new List<byte>();
+
+				var result = false;
+
+				if (File.Exists(logFilePath))
+				{
+					File.Delete(logFilePath);
+				}
+
+				using (var logFile = File.CreateText(logFilePath))
+				{
+					Console.SetOut(logFile);
+					result = Csv2Bin.Manifest.GenerateBinary("table.csv", contents, out binary, out numRecords);
+				}
+
+				if (!result)
+				{
+					MessageBox.Show(File.ReadAllText(logFilePath), "Export Bin", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					goto Finally;
+				}
+
+				var filePath = GetCsFilePath();
+				using (var writer = new BinaryWriter(new FileStream(filePath, FileMode.Create)))
+				{
+					writer.Write(binary.ToArray());
+					if (true)
+					{ // Append summary
+						UInt32 size = (UInt32)binary.Count / numRecords;
+						writer.Write(size);
+						writer.Write(numRecords);
+					}
+				}
+				MessageBox.Show(string.Format("\"{0}\"\nSucceed", filePath), "Export Bin", MessageBoxButtons.OK);
+			}
+			catch (Exception exception)
+			{
+				MessageBox.Show(exception.ToString(), "Export Bin", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				goto Finally;
+			}
+
+			Finally:
+			{
+				var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+				standardOutput.AutoFlush = true;
+				Console.SetOut(standardOutput);
+			}
+
+			try
+			{
+				if (File.Exists(logFilePath))
+				{
+					File.Delete(logFilePath);
+				}
+			}
+			catch (Exception)
+			{
+			}
 		}
 	}
 }

@@ -35,6 +35,8 @@
 			this.ButtonRowDelete = new System.Windows.Forms.Button();
 			this.ButtonRowMoveUp = new System.Windows.Forms.Button();
 			this.ButtonRowMoveDown = new System.Windows.Forms.Button();
+			this.ButtonBinExport = new System.Windows.Forms.Button();
+			this.ButtonCsExport = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.DataGridViewManifest)).BeginInit();
 			this.SuspendLayout();
 			//
@@ -109,11 +111,33 @@
 			this.ButtonRowMoveDown.UseVisualStyleBackColor = true;
 			this.ButtonRowMoveDown.Click += new System.EventHandler(this.ButtonRowMoveDown_Click);
 			//
+			// ButtonBinExport
+			//
+			this.ButtonBinExport.Location = new System.Drawing.Point(679, 332);
+			this.ButtonBinExport.Name = "ButtonBinExport";
+			this.ButtonBinExport.Size = new System.Drawing.Size(75, 23);
+			this.ButtonBinExport.TabIndex = 7;
+			this.ButtonBinExport.Text = "ExportBin";
+			this.ButtonBinExport.UseVisualStyleBackColor = true;
+			this.ButtonBinExport.Click += new System.EventHandler(this.ButtonBinExport_Click);
+			//
+			// ButtonCsExport
+			//
+			this.ButtonCsExport.Location = new System.Drawing.Point(679, 379);
+			this.ButtonCsExport.Name = "ButtonCsExport";
+			this.ButtonCsExport.Size = new System.Drawing.Size(75, 23);
+			this.ButtonCsExport.TabIndex = 8;
+			this.ButtonCsExport.Text = "ExportCs";
+			this.ButtonCsExport.UseVisualStyleBackColor = true;
+			this.ButtonCsExport.Click += new System.EventHandler(this.ButtonCsExport_Click);
+			//
 			// FormCsv2BinSetting
 			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.Controls.Add(this.ButtonCsExport);
+			this.Controls.Add(this.ButtonBinExport);
 			this.Controls.Add(this.ButtonRowMoveDown);
 			this.Controls.Add(this.ButtonRowMoveUp);
 			this.Controls.Add(this.ButtonRowDelete);
@@ -138,5 +162,7 @@
 		private System.Windows.Forms.Button ButtonRowDelete;
 		private System.Windows.Forms.Button ButtonRowMoveUp;
 		private System.Windows.Forms.Button ButtonRowMoveDown;
+		private System.Windows.Forms.Button ButtonBinExport;
+		private System.Windows.Forms.Button ButtonCsExport;
 	}
 }

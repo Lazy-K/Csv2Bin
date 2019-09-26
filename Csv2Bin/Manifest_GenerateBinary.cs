@@ -11,11 +11,11 @@ namespace Csv2Bin
 		public static bool GenerateBinary(
 			string filePath,
 			in List<ManifestContent> manifestContents,
-			ref List<byte> dest,
-			ref UInt32 numRecords)
+			out List<byte> dest,
+			out UInt32 numRecords)
 		{
 			numRecords = 0;
-			dest.Clear();
+			dest = new List<byte>();
 			try
 			{
 				using (var reader = new CsvReader(new StreamReader(filePath, Encoding.UTF8)))
@@ -312,7 +312,7 @@ namespace Csv2Bin
 			return true;
 
 			Failed:
-			dest.Clear();
+			dest = null;
 			return false;
 		}
 	}

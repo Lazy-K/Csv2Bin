@@ -37,21 +37,17 @@ namespace ExcelAddInCsv2Bin
 
 		private string GetCsFilePath(string structName)
 		{
-			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
-			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
 			return GetBasePath() + "/" + structName + ".cs";
 		}
 
 		private string GetBinFilePath()
 		{
-			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
-			return GetBasePath() + "/" + activeSheet.Name + "_csv2bin_bin.bin";
+			return GetBasePath() + "/" + activeSheet.Name + ".bin";
 		}
 
 		private string GetLogFilePath()
 		{
-			var activeWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
 			return GetBasePath() + "/" + "_csv2bin_log.txt";
 		}
 
@@ -636,12 +632,59 @@ namespace ExcelAddInCsv2Bin
 					File.Delete(logFilePath);
 				}
 
+				var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
+				var csvFilePath = activeSheet.Name + ".csv";
+				{ // Save Csv File
+					/**
+					 * activeSheet.SaveAs()でファイルを保存すると
+					 * 実行中のエクセルが保存先のファイルに切り替わるので、
+					 * 一時ワークブックを作成してactiveSheetの内容をコピーして、
+					 * 一時ワークブックを使ってSaveAs()を処理させる
+					 *
+					 * workSheet.Copy(Type.Missing, activeSheet)は同一ブック内の
+					 * シートコピーしか機能しないためCell毎にコピーする
+					 */
+					var rowCount = 0; // activeSheet.Cells.Rows.Countだと空行までカウントしているため独自カウント
+					while (null != activeSheet.Cells[rowCount + 1, 1].Value)
+					{
+						++rowCount;
+					}
+					var columnCount = 0;// activeSheet.Cells.Column.Countだと空列までカウントしているため独自カウント
+					while (null != activeSheet.Cells[1, columnCount + 1].Value)
+					{
+						++columnCount;
+					}
+					MessageBox.Show(rowCount.ToString() + " " + columnCount.ToString());
+
+					{
+						var tempApp = new Microsoft.Office.Interop.Excel.Application();
+						tempApp.Visible = false;
+						var tempWb = tempApp.Workbooks.Add();
+						var tempWs = tempWb.Sheets[1];
+						//tempWs.Select(Type.Missing);
+						for (var i = 0; i < rowCount; ++i)
+						{
+							for (var j = 0; j < columnCount; ++j)
+							{
+								tempWs.Cells[i + 1, j + 1].Value = activeSheet.Cells[i + 1, j + 1].Value;
+							}
+						}
+
+						if (File.Exists(csvFilePath))
+						{
+							File.Delete(csvFilePath);
+						}
+						tempWb.SaveAs(csvFilePath, 62/*xlCSVUTF8*/);
+						tempWb.Close(false);
+					}
+					MessageBox.Show("CSV Saved");
+				}
+
 				using (var logFile = File.CreateText(logFilePath))
 				{
 					Console.SetOut(logFile);
-					result = Csv2Bin.Manifest.GenerateBinary("table.csv", contents, out binary, out numRecords);
+					result = Csv2Bin.Manifest.GenerateBinary(csvFilePath, contents, out binary, out numRecords);
 				}
-
 				if (!result)
 				{
 					MessageBox.Show(File.ReadAllText(logFilePath), "Export Bin", MessageBoxButtons.OK, MessageBoxIcon.Error);

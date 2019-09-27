@@ -33,6 +33,9 @@ namespace BinReadTest
 
 		static private Cont[] _cont;
 
+		/**
+		 * バイナリファイルに要約情報(ファイル末尾に構造体サイズとデータ数の情報)がある場合
+		 */
 		static int Test1(in string filePath)
 		{
 			try
@@ -87,6 +90,9 @@ namespace BinReadTest
 			return 1;
 		}
 
+		/**
+		 * バイナリファイルに要約情報(ファイル末尾に構造体サイズとデータ数の情報)がない場合
+		 */
 		static int Test2(in string filePath)
 		{
 			try

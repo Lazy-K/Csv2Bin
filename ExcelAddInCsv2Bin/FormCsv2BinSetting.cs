@@ -14,12 +14,15 @@ namespace ExcelAddInCsv2Bin
 {
 	public partial class FormCsv2BinSetting : Form
 	{
+		private ManifestHeader _defaultHeader = new ManifestHeader();
+		private List<ManifestContent> _defaultContents = new List<ManifestContent>();
+
 		public FormCsv2BinSetting()
 		{
 			InitializeComponent();
 		}
 
-		private string GetBasePath()
+		private static string GetBasePath()
 		{
 #if DEBUG
 			return "./";
@@ -29,29 +32,29 @@ namespace ExcelAddInCsv2Bin
 #endif
 		}
 
-		private string GetManifestFilePath()
+		public static string GetManifestFilePath()
 		{
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
 			return GetBasePath() + "/" + activeSheet.Name + "_csv2bin_manifest.xml";
 		}
 
-		private string GetCsFilePath(string structName)
+		private static string GetCsFilePath(string structName)
 		{
 			return GetBasePath() + "/" + structName + ".cs";
 		}
 
-		private string GetBinFilePath()
+		private static string GetBinFilePath()
 		{
 			var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
 			return GetBasePath() + "/" + activeSheet.Name + ".bin";
 		}
 
-		private string GetLogFilePath()
+		private static string GetLogFilePath()
 		{
 			return GetBasePath() + "/" + "_csv2bin_log.txt";
 		}
 
-		private bool LoadManifestFile(string filePath, ref ManifestHeader header, ref List<ManifestContent> contents)
+		public static bool LoadManifestFile(string filePath, ref ManifestHeader header, ref List<ManifestContent> contents)
 		{
 			var logFilePath = GetLogFilePath();
 			var standardOutput = Console.Out;
@@ -366,13 +369,6 @@ namespace ExcelAddInCsv2Bin
 
 		private void FormCsv2BinSetting_Load(object sender, EventArgs e)
 		{
-			var header = new ManifestHeader();
-			var contents = new List<ManifestContent>();
-			if (!LoadManifestFile(GetManifestFilePath(), ref header, ref contents))
-			{
-				SetupDefaultManifest(ref header, ref contents);
-			}
-
 			ref var dgv = ref DataGridViewManifest;
 			{
 				{
@@ -420,7 +416,11 @@ namespace ExcelAddInCsv2Bin
 				}
 			}
 
-			RefreshManifestView(header, contents);
+			if (!LoadManifestFile(GetManifestFilePath(), ref _defaultHeader, ref _defaultContents))
+			{
+				SetupDefaultManifest(ref _defaultHeader, ref _defaultContents);
+			}
+			RefreshManifestView(_defaultHeader, _defaultContents);
 		}
 
 		private void RefreshManifestView(in ManifestHeader header, in List<ManifestContent> contents)
@@ -481,14 +481,20 @@ namespace ExcelAddInCsv2Bin
 
 		private void ButtonSaveManifest_Click(object sender, EventArgs e)
 		{
-			var filePath = GetManifestFilePath();
 			var header = new ManifestHeader();
 			var contents = new List<ManifestContent>();
 			GetManifestContentsFromView(ref header, ref contents);
+
+			var filePath = GetManifestFilePath();
 			if (!SaveManifestFile(filePath, header, contents))
 			{
 				MessageBox.Show(string.Format("\"{0}\"\nFailed", Path.GetFullPath(filePath)), "Save Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
+			}
+
+			{
+				_defaultHeader = header;
+				_defaultContents = contents;
 			}
 			MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Save Manifest File", MessageBoxButtons.OK);
 		}
@@ -503,12 +509,23 @@ namespace ExcelAddInCsv2Bin
 				MessageBox.Show(string.Format("\"{0}\"\nFailed", Path.GetFullPath(filePath)), "Load Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
+
+			{
+				_defaultHeader = header;
+				_defaultContents = contents;
+			}
 			RefreshManifestView(header, contents);
 			MessageBox.Show(string.Format("\"{0}\"\nSucceed", Path.GetFullPath(filePath)), "Load Manifest File", MessageBoxButtons.OK);
 		}
 
 		private void ButtonManifestDelete_Click(object sender, EventArgs e)
 		{
+			var dialogResult = MessageBox.Show("Delete Manifest?", "Delete Manifest", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+			if (DialogResult.No == dialogResult)
+			{
+				return;
+			}
+
 			try
 			{
 				if (File.Exists(GetManifestFilePath()))
@@ -519,12 +536,12 @@ namespace ExcelAddInCsv2Bin
 			catch (Exception exception)
 			{
 				MessageBox.Show(exception.ToString(), "Delete Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				goto Failed;
+				return;
 			}
+
+			SetupDefaultManifest(ref _defaultHeader, ref _defaultContents);
+			RefreshManifestView(_defaultHeader, _defaultContents);
 			MessageBox.Show("Succeed", "Delete Manifest File", MessageBoxButtons.OK);
-			return;
-			Failed:
-			return;
 		}
 
 		private void ButtonRowDelete_Click(object sender, EventArgs e)
@@ -613,15 +630,12 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
-		private void ButtonBinExport_Click(object sender, EventArgs e)
+		public static void ExportBin(in ManifestHeader header, in List<ManifestContent> contents)
 		{
 			var logFilePath = GetLogFilePath();
 			var standardOutput = Console.Out;
 			try
 			{
-				var header = new ManifestHeader();
-				var contents = new List<ManifestContent>();
-				GetManifestContentsFromView(ref header, ref contents);
 				UInt32 numRecords;
 				var binary = new List<byte>();
 
@@ -635,15 +649,15 @@ namespace ExcelAddInCsv2Bin
 				var activeSheet = (Microsoft.Office.Interop.Excel.Worksheet)Globals.ThisAddIn.Application.ActiveSheet;
 				var csvFilePath = activeSheet.Name + ".csv";
 				{ // Save Csv File
-					/**
-					 * activeSheet.SaveAs()でファイルを保存すると
-					 * 実行中のエクセルが保存先のファイルに切り替わるので、
-					 * 一時ワークブックを作成してactiveSheetの内容をコピーして、
-					 * 一時ワークブックを使ってSaveAs()を処理させる
-					 *
-					 * workSheet.Copy(Type.Missing, activeSheet)は同一ブック内の
-					 * シートコピーしか機能しないためCell毎にコピーする
-					 */
+				  /**
+				   * activeSheet.SaveAs()でファイルを保存すると
+				   * 実行中のエクセルが保存先のファイルに切り替わるので、
+				   * 一時ワークブックを作成してactiveSheetの内容をコピーして、
+				   * 一時ワークブックを使ってSaveAs()を処理させる
+				   *
+				   * workSheet.Copy(Type.Missing, activeSheet)は同一ブック内の
+				   * シートコピーしか機能しないためCell毎にコピーする
+				   */
 					var rowCount = 0; // activeSheet.Cells.Rows.Countだと空行までカウントしているため独自カウント
 					while (null != activeSheet.Cells[rowCount + 1, 1].Value)
 					{
@@ -654,7 +668,6 @@ namespace ExcelAddInCsv2Bin
 					{
 						++columnCount;
 					}
-					MessageBox.Show(rowCount.ToString() + " " + columnCount.ToString());
 
 					{
 						var tempApp = new Microsoft.Office.Interop.Excel.Application();
@@ -677,7 +690,6 @@ namespace ExcelAddInCsv2Bin
 						tempWb.SaveAs(csvFilePath, 62/*xlCSVUTF8*/);
 						tempWb.Close(false);
 					}
-					MessageBox.Show("CSV Saved");
 				}
 
 				using (var logFile = File.CreateText(logFilePath))
@@ -725,6 +737,14 @@ namespace ExcelAddInCsv2Bin
 			}
 		}
 
+		private void ButtonBinExport_Click(object sender, EventArgs e)
+		{
+			var header = new ManifestHeader();
+			var contents = new List<ManifestContent>();
+			GetManifestContentsFromView(ref header, ref contents);
+			ExportBin(header, contents);
+		}
+
 		private void TextBoxStructName_Validating(object sender, CancelEventArgs e)
 		{
 			var tb = (TextBox)sender;
@@ -732,6 +752,53 @@ namespace ExcelAddInCsv2Bin
 			{
 				MessageBox.Show("Invalid format", "StructName", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				e.Cancel = true;
+			}
+		}
+
+		private bool IsEqualManifest(
+			in ManifestHeader header1,
+			in List<ManifestContent> contents1,
+			in ManifestHeader header2,
+			in List<ManifestContent> contents2)
+		{
+			if (header1.version != header2.version) return false;
+			if (header1.structName != header2.structName) return false;
+
+			if (contents1.Count != contents2.Count) return false;
+			var contentCount = contents1.Count;
+			for (var i = 0; i < contentCount; ++i)
+			{
+				if (contents1[i].valueName != contents2[i].valueName) return false;
+				if (contents1[i].valueType != contents2[i].valueType) return false;
+				if (contents1[i].length != contents2[i].length) return false;
+				if (contents1[i].structFieldName != contents2[i].structFieldName) return false;
+				if (contents1[i].structBitsName != contents2[i].structBitsName) return false;
+			}
+			return true;
+		}
+
+		private void FormCsv2BinSetting_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			var header = new ManifestHeader();
+			var contents = new List<ManifestContent>();
+			GetManifestContentsFromView(ref header, ref contents);
+
+			if (IsEqualManifest(header, contents, _defaultHeader, _defaultContents))
+			{
+				return;
+			}
+
+			var dialogResult = MessageBox.Show("Save Manifest?", "Save Manifest", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+			if (DialogResult.No == dialogResult)
+			{
+				return;
+			}
+
+			var filePath = GetManifestFilePath();
+			if (!SaveManifestFile(filePath, header, contents))
+			{
+				MessageBox.Show(string.Format("\"{0}\"\nFailed", Path.GetFullPath(filePath)), "Save Manifest File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
 			}
 		}
 	}

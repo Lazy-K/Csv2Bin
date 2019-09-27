@@ -36,7 +36,8 @@
 		{
 			this.tab1 = this.Factory.CreateRibbonTab();
 			this.group1 = this.Factory.CreateRibbonGroup();
-			this.settingButton = this.Factory.CreateRibbonButton();
+			this.ButtonSetting = this.Factory.CreateRibbonButton();
+			this.ButtonBinExport = this.Factory.CreateRibbonButton();
 			this.tab1.SuspendLayout();
 			this.group1.SuspendLayout();
 			this.SuspendLayout();
@@ -50,15 +51,22 @@
 			//
 			// group1
 			//
-			this.group1.Items.Add(this.settingButton);
+			this.group1.Items.Add(this.ButtonSetting);
+			this.group1.Items.Add(this.ButtonBinExport);
 			this.group1.Label = "Csv2Bin";
 			this.group1.Name = "group1";
 			//
-			// settingButton
+			// ButtonSetting
 			//
-			this.settingButton.Label = "Setting";
-			this.settingButton.Name = "settingButton";
-			this.settingButton.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.settingButton_Click);
+			this.ButtonSetting.Label = "Setting";
+			this.ButtonSetting.Name = "ButtonSetting";
+			this.ButtonSetting.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ButtonSetting_Click);
+			//
+			// ButtonBinExport
+			//
+			this.ButtonBinExport.Label = "ExportBin";
+			this.ButtonBinExport.Name = "ButtonBinExport";
+			this.ButtonBinExport.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ButtonBinExport_Click);
 			//
 			// RibbonCsv2Bin
 			//
@@ -78,7 +86,8 @@
 
 		internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
 		internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
-		internal Microsoft.Office.Tools.Ribbon.RibbonButton settingButton;
+		internal Microsoft.Office.Tools.Ribbon.RibbonButton ButtonSetting;
+		internal Microsoft.Office.Tools.Ribbon.RibbonButton ButtonBinExport;
 	}
 
 	partial class ThisRibbonCollection

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Csv2Bin;
 using Microsoft.Office.Tools.Ribbon;
 
 namespace ExcelAddInCsv2Bin
@@ -14,10 +15,22 @@ namespace ExcelAddInCsv2Bin
 
 		}
 
-		private void settingButton_Click(object sender, RibbonControlEventArgs e)
+		private void ButtonSetting_Click(object sender, RibbonControlEventArgs e)
 		{
 			var form = new FormCsv2BinSetting();
 			form.ShowDialog();
+		}
+
+		private void ButtonBinExport_Click(object sender, RibbonControlEventArgs e)
+		{
+			var header = new ManifestHeader();
+			var contents = new List<ManifestContent>();
+			if (!FormCsv2BinSetting.LoadManifestFile(FormCsv2BinSetting.GetManifestFilePath(), ref header, ref contents))
+			{
+				MessageBox.Show("Manifest Load Failed", "Export Bin", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+			FormCsv2BinSetting.ExportBin(header, contents);
 		}
 	}
 }

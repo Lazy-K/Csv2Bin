@@ -127,7 +127,7 @@ namespace BinReadTest
 #if true
 			var ret = Test1("../../../Csv2Bin/make/table1.bin");
 #else
-			var ret = Test2("../../../Csv2Bin/make/table2.bin");
+			var ret = Test2("../../../Csv2Bin/make/table1.bin");
 #endif
 			Console.WriteLine("ret={0}", ret);
 			if (null != _cont)
